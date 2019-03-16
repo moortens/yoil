@@ -13,60 +13,6 @@ describe('tests message construction', () => {
     expect(msg).toMatchObject(data);
   });
 
-  it('should allow setting command', () => {
-    const msg = new Message();
-
-    msg.command = 'PRIVMSG';
-
-    expect(msg).toMatchObject({ command: 'PRIVMSG' });
-  });
-
-  it('should allow setting parameter', () => {
-    const msg = new Message();
-
-    msg.command = 'PRIVMSG';
-    msg.params = '#channel';
-
-    expect(msg).toMatchObject({ command: 'PRIVMSG', params: ['#channel'] });
-  });
-
-  it('should allow setting tags via objects', () => {
-    const msg = new Message();
-
-    msg.command = 'PRIVMSG';
-    msg.tags = {
-      account: 'user',
-      batch: 'aBcDeFGH',
-    };
-
-    expect(msg).toMatchObject({
-      command: 'PRIVMSG',
-      tags: new Map([['account', 'user'], ['batch', 'aBcDeFGH']]),
-    });
-  });
-
-  it('should allow setting tags via arrays', () => {
-    const msg = new Message();
-
-    msg.command = 'PRIVMSG';
-    msg.tags = [['account', 'user'], ['batch', 'aBcDeFGH']];
-
-    expect(msg).toMatchObject({
-      command: 'PRIVMSG',
-      tags: new Map([['account', 'user'], ['batch', 'aBcDeFGH']]),
-    });
-  });
-
-  it('should allow removing all tags', () => {
-    const msg = new Message();
-
-    msg.command = 'PRIVMSG';
-    msg.tags = [['account', 'user'], ['batch', 'aBcDeFGH']];
-    msg.tags = null;
-
-    expect(msg).toMatchObject({ command: 'PRIVMSG', tags: new Map() });
-  });
-
   it('should convert messages to their irc syntax', () => {
     const messages = [
       [
