@@ -210,7 +210,6 @@ class Sasl extends Base {
 
     if (payload.has('e')) {
       // fix: proper error handling
-      console.log(payload.get('e'));
       return '*';
     }
 

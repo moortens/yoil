@@ -42,7 +42,7 @@ class Messages extends Base {
     o.server = Messages.isServerMessage(data, this.store.get('server'));
 
     if (Messages.isCtcpMessage(data)) {
-      const [command, value] = Messages.getCtcpCommandAndValue(o);
+      const [command, value] = Messages.getCtcpCommandAndValue(data);
 
       o.command = command;
       o.trailing = value;
@@ -58,8 +58,8 @@ class Messages extends Base {
 
     o.server = Messages.isServerMessage(data, this.store.get('server'));
 
-    if (Messages.isCtcpMessage(o)) {
-      const [command, value] = Messages.getCtcpCommandAndValue(o);
+    if (Messages.isCtcpMessage(data)) {
+      const [command, value] = Messages.getCtcpCommandAndValue(data);
 
       o.command = command;
       o.trailing = value;

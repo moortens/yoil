@@ -14,19 +14,24 @@ const irc = new IRCClient({
 irc.connect();
 
 irc.on('registered', ({ server }) => {
-  console.log('Connected to ' + server)
+  console.log(`Connected to ${server}`);
+  irc.join('#channel');
 });
 
 irc.on('account', ({ account, error }) => {
   if (error) {
     console.log('SASL unsuccessful');
   } else {
-    console.log('I successfully negotiated SASL and logged in as ' + account);
+    console.log(`I successfully negotiated SASL and logged in as ${account}`);
   }
 });
 
-irc.on('privmsg', (data) => {
+irc.on('privmsg', () => {
   console.log('I received a message!');
+});
+
+irc.on('join', ({ channel, nick }) => {
+  irc.privmsg(channel, `Hello there, ${nick}`);
 });
 
 irc.on('motd', data => console.log(data));

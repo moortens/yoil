@@ -4,6 +4,7 @@ const NativeTransport = require('./transports/native');
 const initiateProtocolHandlers = require('./protocol');
 const Store = require('./store');
 const Config = require('./config');
+const Message = require('./message');
 
 /**
  *
@@ -17,6 +18,14 @@ class IRCClient extends EventEmitter {
 
     this.config = new Config(opts);
     this.store = new Store();
+
+    if (this.config.get('port') > 65535 || this.config.get('port') < 1) {
+      if (this.config.get('tls')) {
+        this.config.set('port', 6697);
+      } else {
+        this.config.set('port', 6667);
+      }
+    }
 
     this.transport = opts.transport || 'native';
     this.handlers = new EventEmitter();
@@ -82,6 +91,37 @@ class IRCClient extends EventEmitter {
       return this.connection.send(data.toString());
     }
     return this.connection.send(data);
+  }
+
+  join(channel, key = undefined) {
+    if (channel instanceof Array) {
+      this.send(new Message('JOIN', channel.join(','), key));
+    }
+    this.send(new Message('JOIN', channel, key));
+  }
+
+  part(channel, reason = undefined) {
+    this.send(new Message('PART', channel, reason));
+  }
+
+  list() {
+    this.send(new Message('LIST'));
+  }
+
+  topic(channel, topic = undefined) {
+    this.send(new Message('TOPIC', topic));
+  }
+
+  motd(target = undefined) {
+    this.send(new Message('MOTD', target));
+  }
+
+  stats(query, target = undefined) {
+    this.send(new Message('STATS', query, target));
+  }
+
+  privmsg(target, message) {
+    this.send(new Message('PRIVMSG', target, message));
   }
 }
 

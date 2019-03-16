@@ -72,7 +72,6 @@ class Base {
   emit(event, data) {
     if (data.tags) {
       if (data.tags.get('batch')) {
-        console.log('i got here');
         return this.store.enqueueBatchedResponse(data.tags.get('batch'), data);
       }
     }

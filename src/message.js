@@ -6,7 +6,7 @@ class Message {
     this.ident = null;
     this.hostname = null;
     this.command = null;
-    this.params = null;
+    this.params = [];
 
     if (data instanceof Object) {
       Object.assign(this, data, {});
@@ -16,21 +16,7 @@ class Message {
     }
 
     if (!(this.tags instanceof Map)) {
-      if (this.tags instanceof Array) {
-        try {
-          this.tags = new Map(this.tags);
-        } catch (e) {
-          return null;
-        }
-      } else if (this.tags instanceof Object) {
-        const { tags } = this;
-        this.tags = new Map();
-        Object.getOwnPropertyNames(tags).forEach(val => {
-          this.tags.set(val, tags[val]);
-        });
-      } else {
-        return null;
-      }
+      throw new Error('tags need to be an instance of Map');
     }
 
     this.timestamp = new Date();
@@ -85,7 +71,7 @@ class Message {
         );
       });
 
-      message.push(tags.join(';'));
+      message.push(`@${tags.join(';')}`);
     }
 
     if (!this.command) {
@@ -94,15 +80,27 @@ class Message {
 
     message.push(this.command);
 
-    message = message.concat(
-      this.params.map(p => {
-        if (p.includes(' ')) {
-          return `:${p}`;
-        }
-        return p;
-      }),
-    );
-
+    const specialTrailingCommands = ['PRIVMSG', 'NOTICE'];
+    if (
+      specialTrailingCommands.includes(this.command) &&
+      this.params.length === 2
+    ) {
+      const [target, trailing] = this.params;
+      message.push(`${target} :${trailing}`);
+    } else {
+      message = message.concat(
+        this.params
+          .filter(p => {
+            return p !== null && p !== undefined;
+          })
+          .map(p => {
+            if (p.includes(' ')) {
+              return `:${p}`;
+            }
+            return p;
+          }),
+      );
+    }
     return message.join(' ');
   }
 }
