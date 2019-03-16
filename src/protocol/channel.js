@@ -91,7 +91,6 @@ class Channel extends Base {
 
   // todo: make it pretty
   names(data) {
-    console.log(data);
     const members = data.params[data.params.length - 1].split(' ');
     members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
