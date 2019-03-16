@@ -1,4 +1,4 @@
-yoil - yet another irc lib... 
+# yoil - yet another irc lib...  [![Build Status](https://travis-ci.com/moortens/yoil.svg?branch=master)]
 
 yoil is a simple IRC library written using the latest available ES6 features in node.js 
 and attempts to use as few packages as possible. 
