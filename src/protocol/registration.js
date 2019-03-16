@@ -26,7 +26,9 @@ class Registration extends Base {
     }
 
     this.send(`NICK ${this.config.get('nickname')}`);
-    this.send(`USER ${this.config.get('username')} 0 * :${this.config.get('realname')}`);
+    this.send(
+      `USER ${this.config.get('username')} 0 * :${this.config.get('realname')}`,
+    );
   }
 
   welcome(data) {
@@ -42,7 +44,7 @@ class Registration extends Base {
     // last is the trailing message
     data.params.pop();
 
-    data.params.forEach((token) => {
+    data.params.forEach(token => {
       let [param, value = true] = token.split('=');
 
       // ensure the param is lowercase, defying the spec.

@@ -14,8 +14,10 @@ class Messages extends Base {
 
   static isCtcpMessage({ params }) {
     const message = params[params.length - 1];
-    return message.charCodeAt(0) === 1
-      && message.charCodeAt(message.length - 1) === 1;
+    return (
+      message.charCodeAt(0) === 1 &&
+      message.charCodeAt(message.length - 1) === 1
+    );
   }
 
   static isServerMessage({ prefix }, server) {
@@ -23,7 +25,10 @@ class Messages extends Base {
   }
 
   static getCtcpCommandAndValue({ params }) {
-    const data = params[params.length - 1].substr(1, params[params.length - 1].length - 2);
+    const data = params[params.length - 1].substr(
+      1,
+      params[params.length - 1].length - 2,
+    );
 
     const command = data.substring(0, data.indexOf(' '));
     const value = data.substring(data.indexOf(' ') + 1);

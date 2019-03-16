@@ -24,7 +24,11 @@ class Config {
       saslPassword: null,
       saslMechanism: null,
       saslDisconnectOnFailure: true,
-      saslPreferedMechanisms: new Set(['SCRAM-SHA-512', 'SCRAM-SHA-256', 'PLAIN']),
+      saslPreferedMechanisms: new Set([
+        'SCRAM-SHA-512',
+        'SCRAM-SHA-256',
+        'PLAIN',
+      ]),
 
       autoReconnect: false,
       autoReconnectDelay: 60,
@@ -34,9 +38,9 @@ class Config {
     this.config = new Map(Object.entries(Object.assign({}, defaults, opts)));
   }
 
-    /**
+  /**
    * Stores additional data in the store.
-   *  
+   *
    * @param {String} key - name of the data (key)
    * @param {String} value - what to store
    */
@@ -46,8 +50,8 @@ class Config {
 
   /**
    * Gets a specific key from the store.
-   * 
-   * @param {String} key 
+   *
+   * @param {String} key
    */
   get(key) {
     return this.config.get(key);

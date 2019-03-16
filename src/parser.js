@@ -3,22 +3,29 @@ const Message = require('./message');
 
 class Parser {
   static parseMessageTags(token) {
-    return token.substr(1).split(';').map((tag) => {
-      let [tags, key, value = true] = tag.match(/^([^=|$]*)(?:=(.*))?/);
+    return token
+      .substr(1)
+      .split(';')
+      .map(tag => {
+        const [, key, value = true] = tag.match(/^([^=|$]*)(?:=(.*))?/);
 
-      if (typeof value === 'string') {
-        const escapeMap = {
-          '\\:': ';',
-          '\\s': ' ',
-          '\\\\': '\\',
-          '\\r': '\r',
-          '\\n': '\n',
-        };
-        value = value.replace(/\\:|\\s|\\\\|\\r|\\n/gi, m => escapeMap[m]);
-      }
+        if (typeof value === 'string') {
+          const escapeMap = {
+            '\\:': ';',
+            '\\s': ' ',
+            '\\\\': '\\',
+            '\\r': '\r',
+            '\\n': '\n',
+          };
 
-      return [key, value];
-    });
+          return [
+            key,
+            value.replace(/\\:|\\s|\\\\|\\r|\\n/gi, m => escapeMap[m]),
+          ];
+        }
+
+        return [key, value];
+      });
   }
 
   static parse(message) {
@@ -39,7 +46,9 @@ class Parser {
     }
 
     if (t.charCodeAt(0) === 58) {
-      const [prefix, nick, ident, hostname] = t.substring(1).match(/([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/);
+      const [prefix, nick, ident, hostname] = t
+        .substring(1)
+        .match(/([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/);
 
       data.prefix = prefix;
       data.nick = nick;
@@ -54,7 +63,12 @@ class Parser {
     data.params = [];
     for (let i = 0; i < tokens.length; i += 1) {
       if (tokens[i].charCodeAt(0) === 58) {
-        data.params.push(tokens.slice(i).join(' ').substring(1));
+        data.params.push(
+          tokens
+            .slice(i)
+            .join(' ')
+            .substring(1),
+        );
         break;
       } else {
         data.params.push(tokens[i]);

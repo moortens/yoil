@@ -13,12 +13,7 @@ class Base {
    * @param {Object} Client
    */
   constructor(client) {
-    const {
-      connection,
-      config,
-      handlers,
-      store,
-    } = client;
+    const { connection, config, handlers, store } = client;
 
     this.client = client;
 
@@ -51,8 +46,8 @@ class Base {
   }
 
   /**
-   * 
-   * @param  {...any} args 
+   *
+   * @param  {...any} args
    */
   addConnectionListener(...args) {
     return this.connection.addListener(...args);
@@ -63,21 +58,21 @@ class Base {
   }
 
   /**
-   * 
-   * @param  {...any} args 
+   *
+   * @param  {...any} args
    */
   addCommandListener(...args) {
     return this.handlers.addListener(...args);
   }
 
   /**
-   * 
-   * @param  {...any} args 
+   *
+   * @param  {...any} args
    */
   emit(event, data) {
     if (data.tags) {
       if (data.tags.get('batch')) {
-        console.log("i got here")
+        console.log('i got here');
         return this.store.enqueueBatchedResponse(data.tags.get('batch'), data);
       }
     }
@@ -86,16 +81,15 @@ class Base {
   }
 
   static parseModeInUserhost(str) {
-    
     const modes = ['~', '&', '@', '%', '+'];
-    
+
     let i = 0;
     const m = [];
     while (i < str.length && modes.includes(str[i])) {
       m.push(str[i]);
       i += 1;
     }
-    return [str.substring(i), m]
+    return [str.substring(i), m];
   }
 }
 

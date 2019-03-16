@@ -25,7 +25,7 @@ class Message {
       } else if (this.tags instanceof Object) {
         const { tags } = this;
         this.tags = new Map();
-        Object.getOwnPropertyNames(tags).forEach((val) => {
+        Object.getOwnPropertyNames(tags).forEach(val => {
           this.tags.set(val, tags[val]);
         });
       } else {
@@ -33,14 +33,13 @@ class Message {
       }
     }
 
-
     this.timestamp = new Date();
 
     // fix.
-    const reply = (message) => {
+    const reply = message => {
       // check if channel or privmsg
       // reply to correct target
-      return null;
+      return message;
     };
 
     if (this.command === 'PRIVMSG') {
@@ -63,7 +62,6 @@ class Message {
     return null;
   }
 
-
   set(key, value) {
     this.tags.set(key, value);
     return this;
@@ -82,7 +80,9 @@ class Message {
 
       const tags = [];
       this.tags.forEach((value, key) => {
-        tags.push(`${key}=${value.replace(/;|\s|\\|\r|\n/gi, m => escapeMap[m])}`);
+        tags.push(
+          `${key}=${value.replace(/;|\s|\\|\r|\n/gi, m => escapeMap[m])}`,
+        );
       });
 
       message.push(tags.join(';'));
@@ -94,12 +94,14 @@ class Message {
 
     message.push(this.command);
 
-    message = message.concat(this.params.map((p) => {
-      if (p.includes(' ')) {
-        return `:${p}`;
-      }
-      return p;
-    }));
+    message = message.concat(
+      this.params.map(p => {
+        if (p.includes(' ')) {
+          return `:${p}`;
+        }
+        return p;
+      }),
+    );
 
     return message.join(' ');
   }

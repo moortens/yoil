@@ -42,7 +42,9 @@ class NativeTransport extends EventEmitter {
       return;
     }
 
-    this.socket = (this.tls) ? tls.connect(this.options) : net.connect(this.options);
+    this.socket = this.tls
+      ? tls.connect(this.options)
+      : net.connect(this.options);
 
     // sets the encoding
     this.socket.setEncoding(this.encoding);
@@ -55,7 +57,10 @@ class NativeTransport extends EventEmitter {
       crlfDelay: Infinity,
     });
 
-    this.socket.on((this.tls) ? 'secureConnect' : 'connect', this.onConnect.bind(this));
+    this.socket.on(
+      this.tls ? 'secureConnect' : 'connect',
+      this.onConnect.bind(this),
+    );
     this.socket.on('error', this.onError.bind(this));
     this.socket.on('close', this.onClose.bind(this));
     this.reader.on('line', this.onData.bind(this));

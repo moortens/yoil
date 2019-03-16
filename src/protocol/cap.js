@@ -39,12 +39,11 @@ class Cap extends Base {
     this.store.addDesiredCapability('multi-prefix');
     this.store.addDesiredCapability('oragono.io/maxline');
     this.store.addDesiredCapability('userhost-in-names');
-    //this.store.addDesiredCapability('sts');
+    // this.store.addDesiredCapability('sts');
   }
 
-  sts(data) {
-    //console.log("CLOSED")
-  //  this.client.connect()
+  sts() {
+    return this;
   }
 
   initialize() {
@@ -60,7 +59,7 @@ class Cap extends Base {
       LIST: this.list.bind(this),
       ACK: this.ack.bind(this),
       NAK: this.nak.bind(this),
-      NEW: this.new_.bind(this),
+      NEW: this.newcap.bind(this),
       DEL: this.del.bind(this),
     };
 
@@ -74,7 +73,10 @@ class Cap extends Base {
   list(data) {
     const { params } = data;
 
-    const capabilities = params.slice().pop().split(' ');
+    const capabilities = params
+      .slice()
+      .pop()
+      .split(' ');
 
     this.emit('caps', {
       ...capabilities,
@@ -82,14 +84,14 @@ class Cap extends Base {
   }
 
   addSupportedCapabilities(capabilities) {
-    capabilities.split(' ').forEach(((capability) => {
+    capabilities.split(' ').forEach(capability => {
       const [, key, value = null] = capability.match(/^([^=|$]*)(?:=(.*))?/);
       if (value) {
         this.supportedCapabilities.set(key, value.split(/,|=/));
       } else {
         this.supportedCapabilities.set(key, value);
       }
-    }));
+    });
   }
 
   ls(data) {
@@ -103,26 +105,31 @@ class Cap extends Base {
       return;
     }
 
+    /*
     if (this.supportedCapabilities.has('sts')) {
       const sts = this.supportedCapabilities.get('sts');
       if (sts[1] && !this.client.secure) {
         this.client.port = sts[1];
         this.client.secure = true;
-        //return this.client.disconnect();
-//console.log("HELLOOOOO")
+        // return this.client.disconnect();
+        // console.log("HELLOOOOO")
       }
     }
+    */
 
-    const requestCapabilities = this.store.getDesiredCapabilities().filter(
-      capability => this.supportedCapabilities.has(capability),
-    );
+    const requestCapabilities = this.store
+      .getDesiredCapabilities()
+      .filter(capability => this.supportedCapabilities.has(capability));
 
     this.send(`CAP REQ :${requestCapabilities.join(' ')}`);
   }
 
   ack(data) {
-    this.acknowledgedCapabilities = data.params.slice().pop().split(' ');
-    this.acknowledgedCapabilities.forEach((capability) => {
+    this.acknowledgedCapabilities = data.params
+      .slice()
+      .pop()
+      .split(' ');
+    this.acknowledgedCapabilities.forEach(capability => {
       this.store.addEnabledCapability(capability);
     });
 
@@ -137,27 +144,36 @@ class Cap extends Base {
 
   nak(data) {
     const { params } = data;
-    const capabilities = params.slice().pop().split(' ');
+    const capabilities = params
+      .slice()
+      .pop()
+      .split(' ');
 
     this.emit('capsRejected', {
       ...capabilities,
     });
   }
 
-  new_(data) {
+  newcap(data) {
     this.addSupportedCapabilities(data.params.slice().pop());
 
-    const requestCapabilities = this.store.getDesiredCapabilities().filter(
-      capability => this.supportedCapabilities.has(capability)
-        && !this.store.hasEnabledCapability(capability),
-    );
+    const requestCapabilities = this.store
+      .getDesiredCapabilities()
+      .filter(
+        capability =>
+          this.supportedCapabilities.has(capability) &&
+          !this.store.hasEnabledCapability(capability),
+      );
 
     this.send(`CAP REQ :${requestCapabilities}`);
   }
 
   del(data) {
-    const capabilities = data.params.slice().pop().split(' ');
-    capabilities.forEach((capability) => {
+    const capabilities = data.params
+      .slice()
+      .pop()
+      .split(' ');
+    capabilities.forEach(capability => {
       this.store.removeEnabledCapability(capability);
     });
   }

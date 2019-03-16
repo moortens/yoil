@@ -69,7 +69,6 @@ class IRCClient extends EventEmitter {
       throw new TypeError('use() extensions only accepts functions');
     }
 
-
     Reflect.construct(fn, [this]);
     /* if (klass === undefined) {
       throw new TypeError('use() extensions must return function');
