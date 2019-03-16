@@ -9,11 +9,11 @@ class Channel extends Base {
     this.store.addDesiredCapability('multi-prefix');
 
     this.addCommandListener('JOIN', this.join.bind(this));
-    this.addCommandListener('PART', this.join.bind(this));
-    this.addCommandListener('QUIT', this.join.bind(this));
-    this.addCommandListener('KICK', this.join.bind(this));
-    this.addCommandListener('TOPIC', this.join.bind(this));
-    this.addCommandListener('INVITE', this.join.bind(this));
+    this.addCommandListener('PART', this.part.bind(this));
+    this.addCommandListener('QUIT', this.quit.bind(this));
+    this.addCommandListener('KICK', this.kick.bind(this));
+    this.addCommandListener('TOPIC', this.topic.bind(this));
+    this.addCommandListener('INVITE', this.invite.bind(this));
     this.addCommandListener('ERR_NEEDMOREPARAMS', this.topic.bind(this));
     this.addCommandListener('ERR_NOSUCHCHANNEL', this.topic.bind(this));
     this.addCommandListener('ERR_TOOMANYCHANNELS', this.topic.bind(this));
@@ -22,41 +22,76 @@ class Channel extends Base {
     this.addCommandListener('ERR_CHANNELISFULL', this.topic.bind(this));
     this.addCommandListener('ERR_INVITEONLYCHAN', this.topic.bind(this));
     this.addCommandListener('RPL_TOPIC', this.topic.bind(this));
+    this.addCommandListener('RPL_TOPICWHOTIME', this.topicWhoTime.bind(this));
     this.addCommandListener('RPL_NAMREPLY', this.names.bind(this));
     this.addCommandListener('RPL_ENDOFNAMES', this.userlist.bind(this));
 
-    this.channel = new Map();
+    this.channelMembersCache = new Map();
+    this.channelTopicCache = new Map();
   }
 
   addChannelMember(channel, user) {
-    const members = this.channel.get(channel) || new Set();
+    const members = this.channelMembersCache.get(channel) || new Set();
 
     members.add(user);
 
-    this.channel.set(channel, members);
+    this.channelMembersCache.set(channel, members);
   }
 
   getChannelMembers(channel) {
-    return this.channel.get(channel) || new Set();
+    return this.channelMembersCache.get(channel) || new Set();
   }
 
-  join(data) {
-    const { params } = data;
+  join({ nick, ident, hostname, params }) {
     const [channel, account = null, realname = null] = params;
 
     this.emit('join', {
-      ...data,
+      nick,
+      ident,
+      hostname,
       channel,
       account,
       realname,
     });
   }
 
-  topic(data) {
-    this.emit('topic', data);
+  topicWhoTime({ params: [, channel, userhost, time] }) {
+    const topic = this.channelTopicCache.get(channel);
+
+    const { nick, ident, hostname } = Base.parseUserHost(userhost);
+
+    this.emit('topic', {
+      topic,
+      channel,
+      nick,
+      ident,
+      hostname,
+      time,
+    });
   }
 
+  topic({ nick, ident, hostname, command, params }) {
+    if (command === 'RPL_TOPIC') {
+      const [, channel, topic] = params;
+
+      this.channelTopicCache.set(channel, topic);
+      return;
+    }
+
+    const [channel, topic] = params;
+
+    this.emit('topic', {
+      nick,
+      ident,
+      hostname,
+      channel,
+      topic,
+    });
+  }
+
+  // todo: make it pretty
   names(data) {
+    console.log(data);
     const members = data.params[data.params.length - 1].split(' ');
     members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
@@ -71,6 +106,48 @@ class Channel extends Base {
     this.emit('members', {
       channel: data.params[1],
       members: this.getChannelMembers(data.params[1]),
+    });
+  }
+
+  quit({ nick, ident, hostname, params: [reason] }) {
+    this.emit('quit', {
+      nick,
+      ident,
+      hostname,
+      reason,
+    });
+  }
+
+  invite({ nick, ident, hostname, params: [target, channel] }) {
+    this.emit('invite', {
+      nick,
+      ident,
+      hostname,
+      target,
+      channel,
+    });
+  }
+
+  part({ nick, ident, hostname, params: [channel, reason] }) {
+    this.emit('part', {
+      nick,
+      ident,
+      hostname,
+      channel,
+      reason,
+    });
+  }
+
+  kick({ nick, ident, hostname, params }) {
+    const [channel, target, reason] = params;
+
+    this.emit('kick', {
+      nick,
+      ident,
+      hostname,
+      channel,
+      target,
+      reason,
     });
   }
 }

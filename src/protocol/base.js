@@ -1,3 +1,5 @@
+const Parser = require('../parser');
+
 /**
  * The **Base** class provides synthetic sugar to commonly used functions
  * in the client class.
@@ -89,6 +91,10 @@ class Base {
       i += 1;
     }
     return [str.substring(i), m];
+  }
+
+  static parseUserHost(userhost) {
+    return Parser.parseUserHost(userhost);
   }
 }
 

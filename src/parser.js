@@ -28,6 +28,14 @@ class Parser {
       });
   }
 
+  static parseUserHost(userhost) {
+    const [prefix, nick, ident, hostname] = userhost.match(
+      /([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/,
+    );
+
+    return { prefix, nick, ident, hostname };
+  }
+
   static parse(message) {
     if (typeof message !== 'string') {
       return {};
@@ -46,9 +54,10 @@ class Parser {
     }
 
     if (t.charCodeAt(0) === 58) {
-      const [prefix, nick, ident, hostname] = t
-        .substring(1)
-        .match(/([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/);
+      const { prefix, nick, ident, hostname } = Parser.parseUserHost(
+        t.substring(1),
+      );
+      // .match(/([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/);
 
       data.prefix = prefix;
       data.nick = nick;

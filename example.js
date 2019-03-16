@@ -18,6 +18,10 @@ irc.on('registered', ({ server }) => {
   irc.join('#channel');
 });
 
+irc.on('topic', ({ channel, nick, topic }) => {
+  console.log(`${channel} -- "${topic}" by ${nick}`);
+});
+
 irc.on('account', ({ account, error }) => {
   if (error) {
     console.log('SASL unsuccessful');
@@ -32,6 +36,10 @@ irc.on('privmsg', () => {
 
 irc.on('join', ({ channel, nick }) => {
   irc.privmsg(channel, `Hello there, ${nick}`);
+});
+
+irc.on('part', data => {
+  console.log(data);
 });
 
 irc.on('motd', data => console.log(data));
