@@ -7,7 +7,6 @@ class Channel extends Base {
     this.store.addDesiredCapability('userhost-in-names');
     this.store.addDesiredCapability('extended-join');
     this.store.addDesiredCapability('multi-prefix');
-    
 
     this.addCommandListener('JOIN', this.join.bind(this));
     this.addCommandListener('PART', this.join.bind(this));
@@ -25,7 +24,7 @@ class Channel extends Base {
     this.addCommandListener('RPL_TOPIC', this.topic.bind(this));
     this.addCommandListener('RPL_NAMREPLY', this.names.bind(this));
     this.addCommandListener('RPL_ENDOFNAMES', this.userlist.bind(this));
-  
+
     this.channel = new Map();
   }
 
@@ -54,12 +53,12 @@ class Channel extends Base {
   }
 
   topic(data) {
-    
+    this.emit('topic', data);
   }
 
   names(data) {
     const members = data.params[data.params.length - 1].split(' ');
-    members.forEach((u) => {
+    members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
       const usr = {};
       usr.user = user;
@@ -69,7 +68,10 @@ class Channel extends Base {
   }
 
   userlist(data) {
-    //console.log(this.getChannelMembers(data.params[1]));
+    this.emit('members', {
+      channel: data.params[1],
+      members: this.getChannelMembers(data.params[1]),
+    });
   }
 }
 

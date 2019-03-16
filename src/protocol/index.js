@@ -5,7 +5,7 @@ const ChannelHandler = require('./channel');
 const BatchHandler = require('./batch');
 const SaslHandler = require('./sasl');
 
-module.exports = (client) => {
+module.exports = client => {
   client.use(CapHandler);
   client.use(MessagesHandler);
   client.use(RegistrationHandler);

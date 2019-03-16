@@ -24,7 +24,10 @@ class Sasl extends Base {
     this.username = this.config.get('saslUsername');
     this.password = this.config.get('saslPassword');
 
-    if ((this.preferedMechanisms.has('EXTERNAL')) || ((!this.username) && (!this.password))) {
+    if (
+      this.preferedMechanisms.has('EXTERNAL') ||
+      (!this.username && !this.password)
+    ) {
       return;
     }
 
@@ -84,7 +87,9 @@ class Sasl extends Base {
     const v = mechanisms.split(',');
 
     // apperantly we requested an unsupported mechanism
-    const availableSaslMechanisms = v.filter(m => Array.from(this.preferedMechanisms).includes(m));
+    const availableSaslMechanisms = v.filter(m =>
+      Array.from(this.preferedMechanisms).includes(m),
+    );
 
     if (availableSaslMechanisms.length > 0) {
       while (availableSaslMechanisms.length > 0) {
@@ -111,7 +116,8 @@ class Sasl extends Base {
   errNickLocked() {
     this.emit('account', {
       account: null,
-      error: 'SASL authentication failed because the account is currently disabled',
+      error:
+        'SASL authentication failed because the account is currently disabled',
     });
     this.send('CAP END');
   }
@@ -144,13 +150,15 @@ class Sasl extends Base {
   }
 
   createHmac(key, data) {
-    return crypto.createHmac(this.scramAlgorithms[this.mechanism].method, key)
+    return crypto
+      .createHmac(this.scramAlgorithms[this.mechanism].method, key)
       .update(data)
       .digest();
   }
 
   createHash(data) {
-    return crypto.createHash(this.scramAlgorithms[this.mechanism].method)
+    return crypto
+      .createHash(this.scramAlgorithms[this.mechanism].method)
       .update(data)
       .digest();
   }
@@ -185,16 +193,20 @@ class Sasl extends Base {
   scramInitialChallenge() {
     this.state = State.Challenge;
     this.nonce = Sasl.createNonce();
-    this.header = Buffer.from(`n,,n=${this.username},r=${this.nonce}`).toString('base64');
+    this.header = Buffer.from(`n,,n=${this.username},r=${this.nonce}`).toString(
+      'base64',
+    );
     return this.header;
   }
 
   scramBuildChallenge(data) {
     const response = Buffer.from(data.params[0], 'base64').toString();
-    const payload = new Map(response.split(',').map((p) => {
-      const [, y, z] = p.match(/^([^=]*)=(.*)$/);
-      return [y, z];
-    }));
+    const payload = new Map(
+      response.split(',').map(p => {
+        const [, y, z] = p.match(/^([^=]*)=(.*)$/);
+        return [y, z];
+      }),
+    );
 
     if (payload.has('e')) {
       // fix: proper error handling
@@ -208,7 +220,10 @@ class Sasl extends Base {
 
     const withoutProof = `c=biws,r=${nonce}`;
 
-    this.saltedPassword = this.createPbkdf2(Buffer.from(salt, 'base64'), iterations);
+    this.saltedPassword = this.createPbkdf2(
+      Buffer.from(salt, 'base64'),
+      iterations,
+    );
     const clientKey = this.createHmac(this.saltedPassword, 'Client Key');
     const serverKey = this.createHmac(this.saltedPassword, 'Server Key');
     const storedKey = this.createHash(clientKey);
@@ -234,10 +249,12 @@ class Sasl extends Base {
 
   scramVerifySignature(data) {
     const response = Buffer.from(data.params[0], 'base64').toString();
-    const payload = new Map(response.split(',').map((p) => {
-      const [, y, z] = p.match(/^([^=]*)=(.*)$/);
-      return [y, z];
-    }));
+    const payload = new Map(
+      response.split(',').map(p => {
+        const [, y, z] = p.match(/^([^=]*)=(.*)$/);
+        return [y, z];
+      }),
+    );
     const verify = Buffer.from(payload.get('v'), 'base64');
 
     if (crypto.timingSafeEqual(Buffer.from(this.serverSignature), verify)) {
@@ -258,7 +275,10 @@ class Sasl extends Base {
       this.negotiatingSaslMechanism = false;
 
       if (this.mechanism === 'PLAIN') {
-        const challenge = Buffer.from(`${this.username}\0${this.username}\0${this.password}`, 'utf8').toString('base64');
+        const challenge = Buffer.from(
+          `${this.username}\0${this.username}\0${this.password}`,
+          'utf8',
+        ).toString('base64');
         this.send(`AUTHENTICATE ${challenge}`);
       } else if (this.mechanism === 'EXTERNAL') {
         this.send('AUTHENTICATE +');
