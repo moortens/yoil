@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 
 const Base = require('./base');
+const Event = require('../event');
+const Message = require('../message');
 
 const State = {
   Initializing: 0,
@@ -67,19 +69,34 @@ class Sasl extends Base {
   }
 
   loggedIn(data) {
-    this.emit('account', {
-      account: data.params[2],
-    });
+    const {
+      params: [, , account],
+    } = data;
+    this.emit(
+      'account',
+      new Event(
+        {
+          account,
+        },
+        data,
+      ),
+    );
   }
 
-  loggedOut() {
-    this.emit('account', {
-      account: null,
-    });
+  loggedOut(data) {
+    this.emit(
+      'account',
+      new Event(
+        {
+          account: null,
+        },
+        data,
+      ),
+    );
   }
 
   saslSuccess() {
-    this.send('CAP END');
+    this.send(new Message('CAP', 'END'));
   }
 
   saslMechs(data) {
@@ -101,48 +118,72 @@ class Sasl extends Base {
           // platform.
           this.negotiatingSaslMechanism = true;
 
-          return this.send(`AUTHENTICATE ${attemptSaslMechanism}`);
+          return this.send(new Message('AUTHENTICATE', attemptSaslMechanism));
         }
       }
     } else {
-      this.emit('error', {
-        message: `No supported SASL mechanisms, server only lists ${mechanisms}`,
-      });
-      this.send('CAP END');
+      this.emit(
+        'error',
+        new Error(
+          {
+            message: `No supported SASL mechanisms, server only lists ${mechanisms}`,
+          },
+          data,
+        ),
+      );
+      return this.send(new Message('CAP', 'END'));
     }
     return null;
   }
 
-  errNickLocked() {
-    this.emit('account', {
-      account: null,
-      error:
-        'SASL authentication failed because the account is currently disabled',
-    });
-    this.send('CAP END');
+  errNickLocked(data) {
+    this.emit(
+      'account',
+      new Event(
+        {
+          account: null,
+          error:
+            'SASL authentication failed because the account is currently disabled',
+        },
+        data,
+      ),
+    );
+    this.send(new Message('CAP', 'END'));
   }
 
   errSaslFail() {
     if (this.negotiatingSaslMechanism) {
       return;
     }
-    this.send('CAP END');
+    this.send(new Message('CAP', 'END'));
   }
 
-  errSaslTooLong() {
-    this.emit('error', {
-      message: 'SASL too long!',
-    });
+  errSaslTooLong(data) {
+    this.emit(
+      'error',
+      new Event(
+        {
+          message: 'SASL too long!',
+        },
+        data,
+      ),
+    );
   }
 
   errSaslAborted() {
-    this.send('CAP END');
+    this.send(new Message('CAP', 'END'));
   }
 
-  errSaslAlready() {
-    this.emit('error', {
-      message: 'SASL already authenticated',
-    });
+  errSaslAlready(data) {
+    this.emit(
+      'error',
+      new Event(
+        {
+          message: 'SASL already authenticated',
+        },
+        data,
+      ),
+    );
   }
 
   static createNonce() {
@@ -278,29 +319,29 @@ class Sasl extends Base {
           `${this.username}\0${this.username}\0${this.password}`,
           'utf8',
         ).toString('base64');
-        this.send(`AUTHENTICATE ${challenge}`);
+        this.send(new Message('AUTHENTICATE', challenge));
       } else if (this.mechanism === 'EXTERNAL') {
         this.send('AUTHENTICATE +');
       } else if (this.mechanism.startsWith('SCRAM-SHA')) {
         if (this.state === State.Initializing) {
           const initialChallenge = this.scramInitialChallenge();
-          this.send(`AUTHENTICATE ${initialChallenge}`);
+          this.send(new Message('AUTHENTICATE', initialChallenge));
         }
       }
     } else if (this.mechanism.startsWith('SCRAM-SHA')) {
       if (this.state === State.Challenge) {
         const challengeResponse = this.scramBuildChallenge(data);
-        this.send(`AUTHENTICATE ${challengeResponse}`);
+        this.send(new Message('AUTHENTICATE', challengeResponse));
       } else if (this.state === State.Verify) {
         if (this.scramVerifySignature(data)) {
-          this.send('AUTHENTICATE +');
+          this.send(new Message('AUTHENTICATE', '+'));
         } else {
-          this.send('AUTHENTICATE *');
+          this.send(new Message('AUTHENTICATE', '*'));
         }
       }
     } else {
       // unknown mechanism
-      this.send('AUTHENTICATE *');
+      this.send(new Message('AUTHENTICATE', '*'));
     }
   }
 }

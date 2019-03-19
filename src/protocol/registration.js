@@ -1,4 +1,6 @@
 const Base = require('./base');
+const Message = require('../message');
+const Event = require('../event');
 
 class Registration extends Base {
   constructor(client) {
@@ -22,12 +24,18 @@ class Registration extends Base {
     const password = this.config.get('password');
 
     if (password !== null && password !== undefined) {
-      this.send(`PASS ${password}`);
+      this.send(new Message('PASS', password));
     }
 
-    this.send(`NICK ${this.config.get('nickname')}`);
+    this.send(new Message('NICK', this.config.get('nickname')));
     this.send(
-      `USER ${this.config.get('username')} 0 * :${this.config.get('realname')}`,
+      new Message(
+        'USER',
+        this.config.get('username'),
+        '0',
+        '*',
+        this.config.get('realname'),
+      ),
     );
   }
 
@@ -35,7 +43,7 @@ class Registration extends Base {
     const server = data.prefix;
 
     this.store.set('server', server);
-    this.emit('registered', { server });
+    this.emit('registered', new Event({ server }, data));
   }
 
   isupport(data) {
@@ -74,10 +82,16 @@ class Registration extends Base {
   }
 
   errNoMotd(data) {
-    return this.emit('motd', {
-      server: data.prefix,
-      error: 'No MOTD',
-    });
+    return this.emit(
+      'motd',
+      new Event(
+        {
+          server: data.prefix,
+          error: 'No MOTD',
+        },
+        data,
+      ),
+    );
   }
 
   motd(data) {
@@ -85,10 +99,16 @@ class Registration extends Base {
   }
 
   endOfMotd(data) {
-    this.emit('motd', {
-      server: data.prefix,
-      motd: Array.from(this.motd),
-    });
+    this.emit(
+      'motd',
+      new Event(
+        {
+          server: data.prefix,
+          motd: Array.from(this.motd),
+        },
+        data,
+      ),
+    );
   }
 }
 

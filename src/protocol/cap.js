@@ -1,4 +1,7 @@
 const Base = require('./base');
+const Event = require('../event');
+const Message = require('../message');
+
 /**
  * todo
  * - sts policy, duration, preload
@@ -48,7 +51,7 @@ class Cap extends Base {
 
   initialize() {
     this.negotiating = true;
-    this.send('CAP LS 302');
+    this.send(new Message('CAP', 'LS', '302'));
   }
 
   negotiate(data) {
@@ -78,9 +81,15 @@ class Cap extends Base {
       .pop()
       .split(' ');
 
-    this.emit('caps', {
-      ...capabilities,
-    });
+    this.emit(
+      'caps',
+      new Event(
+        {
+          ...capabilities,
+        },
+        data,
+      ),
+    );
   }
 
   addSupportedCapabilities(capabilities) {
@@ -121,7 +130,7 @@ class Cap extends Base {
       .getDesiredCapabilities()
       .filter(capability => this.supportedCapabilities.has(capability));
 
-    this.send(`CAP REQ :${requestCapabilities.join(' ')}`);
+    this.send(new Message('CAP', 'REQ', requestCapabilities.join(' ')));
   }
 
   ack(data) {
@@ -138,7 +147,7 @@ class Cap extends Base {
     } else if (this.negotiating) {
       // only send CAP END if we are not negotiating during connection phase
       this.negotiating = false;
-      this.send('CAP END');
+      this.send(new Message('CAP', 'END'));
     }
   }
 
@@ -149,9 +158,15 @@ class Cap extends Base {
       .pop()
       .split(' ');
 
-    this.emit('capsRejected', {
-      ...capabilities,
-    });
+    this.emit(
+      'capsRejected',
+      new Event(
+        {
+          ...capabilities,
+        },
+        data,
+      ),
+    );
   }
 
   newcap(data) {
@@ -165,7 +180,7 @@ class Cap extends Base {
           !this.store.hasEnabledCapability(capability),
       );
 
-    this.send(`CAP REQ :${requestCapabilities}`);
+    this.send(new Message('CAP', 'REQ', requestCapabilities.join(' ')));
   }
 
   del(data) {
@@ -194,7 +209,7 @@ class Cap extends Base {
     }
 
     if (this.store.get('saslMechanism')) {
-      this.send(`AUTHENTICATE ${this.store.get('saslMechanism')}`);
+      this.send(new Message('AUTHENTICATE', this.store.get('saslMechanism')));
     }
   }
 }

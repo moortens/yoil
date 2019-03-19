@@ -1,4 +1,5 @@
 const Base = require('./base');
+const Event = require('../event');
 
 class Messages extends Base {
   constructor(client) {
@@ -37,7 +38,7 @@ class Messages extends Base {
   }
 
   notice(data) {
-    const o = { server: false, ...data };
+    const o = new Event({ server: false, ...data }, data);
 
     o.server = Messages.isServerMessage(data, this.store.get('server'));
 
@@ -54,7 +55,7 @@ class Messages extends Base {
   }
 
   privmsg(data) {
-    const o = { server: false, ...data };
+    const o = new Event({ server: false, ...data }, data);
 
     o.server = Messages.isServerMessage(data, this.store.get('server'));
 

@@ -34,7 +34,10 @@ irc.on('privmsg', () => {
   console.log('I received a message!');
 });
 
-irc.on('join', ({ channel, nick }) => {
+irc.on('join', data => {
+  const { channel, nick } = data;
+  console.log(data);
+  console.log(data.time);
   irc.privmsg(channel, `Hello there, ${nick}`);
 });
 

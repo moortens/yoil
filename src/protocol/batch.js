@@ -1,4 +1,5 @@
 const Base = require('./base');
+const Event = require('../event');
 
 class Batch extends Base {
   constructor(client) {
@@ -25,10 +26,16 @@ class Batch extends Base {
         parameters,
       });
     } else if (prefix === 45) {
-      this.emit('batch', {
-        ...this.batch.get(reference),
-        data: this.store.batchedResponseCache.get(reference),
-      });
+      this.emit(
+        'batch',
+        new Event(
+          {
+            ...this.batch.get(reference),
+            data: this.store.batchedResponseCache.get(reference),
+          },
+          data,
+        ),
+      );
     }
   }
 }
