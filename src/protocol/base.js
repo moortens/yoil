@@ -96,6 +96,12 @@ class Base {
   static parseUserHost(userhost) {
     return Parser.parseUserHost(userhost);
   }
+
+  isChannel(target) {
+    return (
+      this.store.getAdvertisedFeature('chantypes').split('') || ['#']
+    ).includes(target.substring(0, 1));
+  }
 }
 
 module.exports = Base;
