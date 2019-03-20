@@ -118,18 +118,25 @@ class Channel extends Base {
     const members = data.params[data.params.length - 1].split(' ');
     members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
-      const usr = {};
-      usr.user = user;
-      usr.modes = modes;
-      this.addChannelMember(data.params[2], usr);
+      this.addChannelMember(data.params[2], {
+        ...Base.parseUserHost(user),
+        modes,
+      });
     });
   }
 
   userlist(data) {
-    this.emit('members', {
-      channel: data.params[1],
-      members: this.getChannelMembers(data.params[1]),
-    });
+    const [, channel] = data.params;
+    this.emit(
+      'members',
+      new Event(
+        {
+          channel,
+          members: this.getChannelMembers(data.params[1]),
+        },
+        data,
+      ),
+    );
   }
 
   quit(data) {
