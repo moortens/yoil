@@ -16,17 +16,19 @@ class Channel extends Base {
     this.addCommandListener('TOPIC', this.topic.bind(this));
     this.addCommandListener('INVITE', this.invite.bind(this));
     this.addCommandListener('MODE', this.mode.bind(this));
-    this.addCommandListener('ERR_NEEDMOREPARAMS', this.topic.bind(this));
-    this.addCommandListener('ERR_NOSUCHCHANNEL', this.topic.bind(this));
-    this.addCommandListener('ERR_TOOMANYCHANNELS', this.topic.bind(this));
-    this.addCommandListener('ERR_BADCHANNELKEY', this.topic.bind(this));
-    this.addCommandListener('ERR_BANNEDFROMCHAN', this.topic.bind(this));
-    this.addCommandListener('ERR_CHANNELISFULL', this.topic.bind(this));
-    this.addCommandListener('ERR_INVITEONLYCHAN', this.topic.bind(this));
+
     this.addCommandListener('RPL_TOPIC', this.topic.bind(this));
     this.addCommandListener('RPL_TOPICWHOTIME', this.topicWhoTime.bind(this));
     this.addCommandListener('RPL_NAMREPLY', this.names.bind(this));
     this.addCommandListener('RPL_ENDOFNAMES', this.userlist.bind(this));
+
+    this.addCommandListener('ERR_NEEDMOREPARAMS', this.error.bind(this));
+    this.addCommandListener('ERR_NOSUCHCHANNEL', this.error.bind(this));
+    this.addCommandListener('ERR_TOOMANYCHANNELS', this.error.bind(this));
+    this.addCommandListener('ERR_BADCHANNELKEY', this.error.bind(this));
+    this.addCommandListener('ERR_BANNEDFROMCHAN', this.error.bind(this));
+    this.addCommandListener('ERR_CHANNELISFULL', this.error.bind(this));
+    this.addCommandListener('ERR_INVITEONLYCHAN', this.error.bind(this));
 
     this.channelMembersCache = new Map();
     this.channelTopicCache = new Map();
@@ -282,6 +284,23 @@ class Channel extends Base {
     });
 
     this.emit('mode', res);
+  }
+
+  error(data) {
+    const {
+      params: [, channel, message],
+    } = data;
+
+    this.emit(
+      'error',
+      new Event(
+        {
+          channel,
+          message,
+        },
+        data,
+      ),
+    );
   }
 }
 
