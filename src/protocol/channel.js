@@ -29,6 +29,10 @@ class Channel extends Base {
     this.addCommandListener('ERR_BANNEDFROMCHAN', this.error.bind(this));
     this.addCommandListener('ERR_CHANNELISFULL', this.error.bind(this));
     this.addCommandListener('ERR_INVITEONLYCHAN', this.error.bind(this));
+    this.addCommandListener('ERR_CANNOTSENDTOCHAN', this.error.bind(this));
+    this.addCommandListener('ERR_NOTONCHANNEL', this.error.bind(this));
+    this.addCommandListener('ERR_USERONCHANNEL', this.error.bind(this));
+    this.addCommandListener('ERR_CHANOPRIVSNEEDED', this.error.bind(this));
 
     this.channelMembersCache = new Map();
     this.channelTopicCache = new Map();
