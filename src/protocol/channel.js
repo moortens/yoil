@@ -15,6 +15,7 @@ class Channel extends Base {
     this.addCommandListener('KICK', this.kick.bind(this));
     this.addCommandListener('TOPIC', this.topic.bind(this));
     this.addCommandListener('INVITE', this.invite.bind(this));
+    this.addCommandListener('MODE', this.mode.bind(this));
     this.addCommandListener('ERR_NEEDMOREPARAMS', this.topic.bind(this));
     this.addCommandListener('ERR_NOSUCHCHANNEL', this.topic.bind(this));
     this.addCommandListener('ERR_TOOMANYCHANNELS', this.topic.bind(this));
@@ -222,6 +223,65 @@ class Channel extends Base {
         data,
       ),
     );
+  }
+
+  /*
+  {
+    "added": [
+      {mode: 'k', param: 'cow'},
+      {mode: 'o', param: 'moocow'}
+    ],
+    "removed": [
+      {mode: 'i'},
+      {mode: 'b', param: '*!*@example.org'},
+    ]
+  }
+  */
+  mode(data) {
+    const [target, modes, ...params] = data.params;
+
+    if (!this.isChannel(target)) {
+      return;
+    }
+
+    const types = this.store
+      .getAdvertisedFeature('chanmodes')
+      .map(m => m.split(''));
+    const typeHasParameter = [].concat(...types.slice(0, 3));
+
+    const res = new Event(
+      {
+        target,
+      },
+      data,
+    );
+
+    let direction = null;
+    modes.split('').forEach(mode => {
+      if (mode.charCodeAt(0) === 43) {
+        direction = 'add';
+      } else if (mode.charCodeAt(0) === 45) {
+        direction = 'remove';
+      } else {
+        if (direction === null) {
+          return;
+        }
+
+        if (typeHasParameter.includes(mode)) {
+          res[direction] = [].concat(res[direction] || [], [
+            {
+              mode,
+              param: params.shift(),
+            },
+          ]);
+          return;
+        }
+
+        res[direction] = [].concat(res[direction] || [], [{ mode }]);
+      }
+    });
+
+    this.emit('mode', res);
   }
 }
 

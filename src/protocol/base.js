@@ -98,9 +98,9 @@ class Base {
   }
 
   isChannel(target) {
-    return (
-      this.store.getAdvertisedFeature('chantypes').split('') || ['#']
-    ).includes(target.substring(0, 1));
+    return (this.store.getAdvertisedFeature('chantypes') || '#')
+      .split('')
+      .includes(target.substring(0, 1));
   }
 }
 
