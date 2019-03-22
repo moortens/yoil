@@ -12,7 +12,7 @@ class Errors extends Base {
 
     Object.values(Numerics)
       .filter(name => name.startsWith('ERR') && !events.includes(name))
-      .forEech(name => {
+      .forEach(name => {
         this.addCommandListener(name, this.error.bind(this));
       });
   }
