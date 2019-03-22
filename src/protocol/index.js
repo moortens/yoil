@@ -4,6 +4,7 @@ const RegistrationHandler = require('./registration');
 const ChannelHandler = require('./channel');
 const BatchHandler = require('./batch');
 const SaslHandler = require('./sasl');
+const UserHandler = require('./user');
 const ErrorHandler = require('./errors');
 
 module.exports = client => {
@@ -13,5 +14,6 @@ module.exports = client => {
   client.use(ChannelHandler);
   client.use(BatchHandler);
   client.use(SaslHandler);
+  client.use(UserHandler);
   client.use(ErrorHandler);
 };
