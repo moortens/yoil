@@ -8,6 +8,7 @@ class User extends Base {
     this.addCommandListener('CHGHOST', this.chghost.bind(this));
     this.addCommandListener('ACCOUNT', this.account.bind(this));
     this.addCommandListener('INVITE', this.invite.bind(this));
+    this.addCommandListener('AWAY', this.invite.bind(this));
   }
 
   chghost(data) {
@@ -65,6 +66,24 @@ class User extends Base {
           source: {
             nick,
           },
+        },
+        data,
+      ),
+    );
+  }
+
+  away(data) {
+    const {
+      nick,
+      params: [message = null],
+    } = data;
+
+    this.emit(
+      'away-notify',
+      new Event(
+        {
+          nick,
+          message,
         },
         data,
       ),
