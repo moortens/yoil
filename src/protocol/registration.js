@@ -16,6 +16,10 @@ class Registration extends Base {
     this.addCommandListener('RPL_MOTDSTART', this.motdStart.bind(this));
     this.addCommandListener('RPL_ENDOFMOTD', this.endOfMotd.bind(this));
     this.addCommandListener('ERR_NOMOTD', this.errNoMotd.bind(this));
+    this.addCommandListener('ERR_PASSWDMISMATCH', this.error.bind(this));
+    this.addCommandListener('ERR_ALREADYREGISTERED', this.error.bind(this));
+    this.addCommandListener('ERR_YOUREBANNEDCREEP', this.error.bind(this));
+    this.addCommandListener('ERR_NOPERMFORHOST', this.error.bind(this));
 
     this.motd = new Set();
   }
@@ -105,6 +109,23 @@ class Registration extends Base {
         {
           server: data.prefix,
           motd: Array.from(this.motd),
+        },
+        data,
+      ),
+    );
+  }
+
+  error(data) {
+    const {
+      params: [client, message],
+    } = data;
+
+    this.emit(
+      'error',
+      new Event(
+        {
+          client,
+          message,
         },
         data,
       ),
