@@ -18,13 +18,13 @@ class Sasl extends Base {
   constructor(client) {
     super(client);
 
-    this.preferedMechanisms = this.config.get('saslPreferedMechanisms');
+    this.preferedMechanisms = this.config.saslPreferedMechanisms;
     if (this.preferedMechanisms instanceof String === true) {
       this.preferedMechanisms = new Set([this.preferedMechanisms]);
     }
 
-    this.username = this.config.get('saslUsername');
-    this.password = this.config.get('saslPassword');
+    this.username = this.config.saslUsername;
+    this.password = this.config.saslPassword;
 
     if (
       this.preferedMechanisms.has('EXTERNAL') ||

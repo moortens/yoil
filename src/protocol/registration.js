@@ -8,7 +8,7 @@ class Registration extends Base {
 
     this.store.addDesiredCapability('extended-join');
 
-    this.addConnectionListener('CONNECTED', this.register.bind(this));
+    this.addConnectionListener('connected', this.register.bind(this));
 
     this.addCommandListener('RPL_WELCOME', this.welcome.bind(this));
     this.addCommandListener('RPL_ISUPPORT', this.isupport.bind(this));
@@ -20,26 +20,22 @@ class Registration extends Base {
     this.addCommandListener('ERR_ALREADYREGISTERED', this.error.bind(this));
     this.addCommandListener('ERR_YOUREBANNEDCREEP', this.error.bind(this));
     this.addCommandListener('ERR_NOPERMFORHOST', this.error.bind(this));
+    this.addCommandListener('PING', this.ping.bind(this));
 
     this.motd = new Set();
   }
 
   register() {
-    const password = this.config.get('password');
+    console.log('hi');
+    const { password } = this.config;
 
     if (password !== null && password !== undefined) {
       this.send(new Message('PASS', password));
     }
 
-    this.send(new Message('NICK', this.config.get('nickname')));
+    this.send(new Message('NICK', this.config.nickname));
     this.send(
-      new Message(
-        'USER',
-        this.config.get('username'),
-        '0',
-        '*',
-        this.config.get('realname'),
-      ),
+      new Message('USER', this.config.username, '0', '*', this.config.realname),
     );
   }
 
@@ -130,6 +126,11 @@ class Registration extends Base {
         data,
       ),
     );
+  }
+
+  ping(data) {
+    console.log(`PONG${data.params}`);
+    this.send(new Message('PONG', data.params[0]));
   }
 }
 

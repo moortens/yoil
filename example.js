@@ -1,6 +1,6 @@
-const IRCClient = require('./src/client');
+const irc = require('./index');
 
-const irc = new IRCClient({
+const config = new irc.Config({
   nickname: 'nick',
   username: 'user',
   realname: 'the real name',
@@ -11,18 +11,20 @@ const irc = new IRCClient({
   saslPassword: 'password',
 });
 
-irc.connect();
+const client = new irc.Client(config);
 
-irc.on('registered', ({ server }) => {
+client.connect();
+
+client.on('registered', ({ server }) => {
   console.log(`Connected to ${server}`);
-  irc.join('#channel');
+  client.join('#channel');
 });
 
-irc.on('topic', ({ channel, nick, topic }) => {
+client.on('topic', ({ channel, nick, topic }) => {
   console.log(`${channel} -- "${topic}" by ${nick}`);
 });
 
-irc.on('account', ({ account, error }) => {
+client.on('account', ({ account, error }) => {
   if (error) {
     console.log('SASL unsuccessful');
   } else {
@@ -30,19 +32,22 @@ irc.on('account', ({ account, error }) => {
   }
 });
 
-irc.on('privmsg', () => {
+client.on('privmsg', () => {
   console.log('I received a message!');
 });
 
-irc.on('join', data => {
+client.on('join', data => {
   const { channel, nick } = data;
   console.log(data);
   console.log(data.time);
-  irc.privmsg(channel, `Hello there, ${nick}`);
+  client.privmsg(channel, `Hello there, ${nick}`);
 });
 
-irc.on('part', data => {
+client.on('part', data => {
   console.log(data);
 });
 
-irc.on('motd', data => console.log(data));
+client.on('motd', data => console.log(data));
+
+client.on('error', data => console.log(data));
+// client.on('data', data => console.log(data))

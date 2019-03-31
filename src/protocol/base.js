@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const Parser = require('../parser');
 
 /**
@@ -15,14 +16,19 @@ class Base {
    * @param {Object} Client
    */
   constructor(client) {
-    const { connection, config, handlers, store } = client;
+    const { socket, config, store } = client;
 
     this.client = client;
 
-    this.connection = connection;
+    this.socket = socket;
     this.config = config;
     this.store = store;
-    this.handlers = handlers;
+
+    this.events = new EventEmitter();
+
+    this.client.on('data', data => {
+      this.events.emit(data.command, data);
+    });
   }
 
   /**
@@ -44,7 +50,7 @@ class Base {
    * @see {@link https://nodejs.org/api/events.html#events_emitter_prependlistener_eventname_listener|prependListener}
    */
   prependConnectionListener(...args) {
-    return this.connection.prependListener(...args);
+    return this.client.prependListener(...args);
   }
 
   /**
@@ -52,11 +58,11 @@ class Base {
    * @param  {...any} args
    */
   addConnectionListener(...args) {
-    return this.connection.addListener(...args);
+    return this.client.addListener(...args);
   }
 
   prependCommandListener(...args) {
-    return this.handlers.prependListener(...args);
+    return this.events.prependListener(...args);
   }
 
   /**
@@ -64,7 +70,7 @@ class Base {
    * @param  {...any} args
    */
   addCommandListener(...args) {
-    return this.handlers.addListener(...args);
+    return this.events.addListener(...args);
   }
 
   /**

@@ -35,26 +35,7 @@ class Config {
       autoReconnectMaxRetries: 3,
     };
 
-    this.config = new Map(Object.entries(Object.assign({}, defaults, opts)));
-  }
-
-  /**
-   * Stores additional data in the store.
-   *
-   * @param {String} key - name of the data (key)
-   * @param {String} value - what to store
-   */
-  set(key, value) {
-    return this.config.set(key, value);
-  }
-
-  /**
-   * Gets a specific key from the store.
-   *
-   * @param {String} key
-   */
-  get(key) {
-    return this.config.get(key);
+    Object.assign(this, defaults, opts);
   }
 }
 
