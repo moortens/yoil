@@ -20,7 +20,12 @@ class Client extends Connection {
     this.config = config;
     this.store = new Store();
 
-    this.handlers = new Set();
+    this.store.set('connected', false);
+    this.store.set('registered', false);
+
+    this.on('connected', () => {
+      this.store.set('connected', true);
+    });
 
     initiateProtocolHandlers(this);
   }
@@ -30,7 +35,7 @@ class Client extends Connection {
       throw new TypeError('use() extensions only accepts functions');
     }
 
-    this.handlers.add(Reflect.construct(fn, [this]));
+    Reflect.construct(fn, [this]);
 
     return this;
   }
@@ -64,6 +69,19 @@ class Client extends Connection {
 
   privmsg(target, message) {
     this.send(new Message('PRIVMSG', target, message));
+  }
+
+  quit(message) {
+    this.send(new Message('QUIT', message));
+    this.close();
+  }
+
+  close() {
+    if (this.store.get('registered')) {
+      this.end();
+    } else {
+      this.destroy();
+    }
   }
 }
 

@@ -26,7 +26,6 @@ class Registration extends Base {
   }
 
   register() {
-    console.log('hi');
     const { password } = this.config;
 
     if (password !== null && password !== undefined) {
@@ -43,6 +42,8 @@ class Registration extends Base {
     const server = data.prefix;
 
     this.store.set('server', server);
+    this.store.set('registered', true);
+
     this.emit('registered', new Event({ server }, data));
   }
 

@@ -38,8 +38,6 @@ client.on('privmsg', () => {
 
 client.on('join', data => {
   const { channel, nick } = data;
-  console.log(data);
-  console.log(data.time);
   client.privmsg(channel, `Hello there, ${nick}`);
 });
 
