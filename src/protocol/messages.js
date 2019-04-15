@@ -9,8 +9,8 @@ class Messages extends Base {
     this.store.addDesiredCapability('draft/message-tags-0.2');
     this.store.addDesiredCapability('server-time');
 
-    this.addCommandListener('NOTICE', this.notice.bind(this));
-    this.addCommandListener('PRIVMSG', this.privmsg.bind(this));
+    this.addCommandListener('NOTICE', this.message.bind(this));
+    this.addCommandListener('PRIVMSG', this.message.bind(this));
   }
 
   static isCtcpMessage({ params }) {
@@ -26,49 +26,70 @@ class Messages extends Base {
   }
 
   static getCtcpCommandAndValue({ params }) {
-    const data = params[params.length - 1].substr(
-      1,
-      params[params.length - 1].length - 2,
+    const [, command, value = null] = params[params.length - 1].match(
+      /\1([^\s|$|\1]+)(?:\s([^$|\1]+))?\1?/,
     );
-
-    const command = data.substring(0, data.indexOf(' '));
-    const value = data.substring(data.indexOf(' ') + 1);
 
     return [command, value];
   }
 
-  notice(data) {
-    const o = new Event({ server: false, ...data }, data);
+  message(data) {
+    const {
+      prefix,
+      nick,
+      ident,
+      hostname,
+      params: [target, message],
+    } = data;
 
-    o.server = Messages.isServerMessage(data, this.store.get('server'));
+    if (Messages.isServerMessage(data, this.store.get('server'))) {
+      this.emit(
+        `server::${data.command.toLowerCase()}`,
+        new Event(
+          {
+            prefix,
+            target,
+            message,
+          },
+          data,
+        ),
+      );
+    } else {
+      const event = new Event(
+        {
+          prefix,
+          nick,
+          ident,
+          hostname,
+          target,
+          message,
+        },
+        data,
+      );
 
-    if (Messages.isCtcpMessage(data)) {
-      const [command, value] = Messages.getCtcpCommandAndValue(data);
+      if (Messages.isCtcpMessage(data)) {
+        const [command, value = null] = Messages.getCtcpCommandAndValue(data);
 
-      o.command = command;
-      o.trailing = value;
-
-      return this.emit('ctcp-response', o);
+        this.emit(
+          `ctcp::${data.command === 'NOTICE' ? 'response' : 'request'}`,
+          new Event(
+            {
+              prefix,
+              nick,
+              ident,
+              hostname,
+              command,
+              value,
+            },
+            data,
+          ),
+        );
+      } else if (this.isChannel(target)) {
+        this.emit(`channel::${data.command.toLowerCase()}`, event);
+      } else {
+        this.emit(`user::${data.command.toLowerCase()}`, event);
+      }
     }
-
-    return this.emit('notice', o);
-  }
-
-  privmsg(data) {
-    const o = new Event({ server: false, ...data }, data);
-
-    o.server = Messages.isServerMessage(data, this.store.get('server'));
-
-    if (Messages.isCtcpMessage(data)) {
-      const [command, value] = Messages.getCtcpCommandAndValue(data);
-
-      o.command = command;
-      o.trailing = value;
-
-      this.emit('ctcp-request', o);
-    }
-
-    return this.emit('privmsg', o);
   }
 }
 
