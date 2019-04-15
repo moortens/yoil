@@ -82,7 +82,7 @@ class Cap extends Base {
       .split(' ');
 
     this.emit(
-      'caps',
+      'cap::list',
       new Event(
         {
           ...capabilities,
@@ -159,7 +159,7 @@ class Cap extends Base {
       .split(' ');
 
     this.emit(
-      'capsRejected',
+      'caps::rejected',
       new Event(
         {
           ...capabilities,

@@ -84,6 +84,12 @@ class Base {
       }
     }
 
+    Object.defineProperty(data, 'type', {
+      writable: false,
+      value: event,
+    });
+    this.client.emit('stream', data);
+
     return this.client.emit(event, data);
   }
 

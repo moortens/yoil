@@ -27,7 +27,7 @@ class Batch extends Base {
       });
     } else if (prefix === 45) {
       this.emit(
-        'batch',
+        `batch::${type}`,
         new Event(
           {
             ...this.batch.get(reference),

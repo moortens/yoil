@@ -25,8 +25,10 @@ class Registration extends Base {
     this.motd = new Set();
   }
 
-  register() {
+  register(data) {
     const { password } = this.config;
+
+    this.emit('server::connect', new Event({}, data));
 
     if (password !== null && password !== undefined) {
       this.send(new Message('PASS', password));
@@ -44,7 +46,7 @@ class Registration extends Base {
     this.store.set('server', server);
     this.store.set('registered', true);
 
-    this.emit('registered', new Event({ server }, data));
+    this.emit('server::registered', new Event({ server }, data));
   }
 
   isupport(data) {
@@ -84,7 +86,7 @@ class Registration extends Base {
 
   errNoMotd(data) {
     return this.emit(
-      'motd',
+      'server::motd',
       new Event(
         {
           server: data.prefix,
@@ -101,7 +103,7 @@ class Registration extends Base {
 
   endOfMotd(data) {
     this.emit(
-      'motd',
+      'server::motd',
       new Event(
         {
           server: data.prefix,
@@ -130,7 +132,6 @@ class Registration extends Base {
   }
 
   ping(data) {
-    console.log(`PONG${data.params}`);
     this.send(new Message('PONG', data.params[0]));
   }
 }

@@ -73,7 +73,7 @@ class Sasl extends Base {
       params: [, , account],
     } = data;
     this.emit(
-      'account',
+      'sasl::account',
       new Event(
         {
           account,
@@ -85,7 +85,7 @@ class Sasl extends Base {
 
   loggedOut(data) {
     this.emit(
-      'account',
+      'sasl::account',
       new Event(
         {
           account: null,
@@ -138,7 +138,7 @@ class Sasl extends Base {
 
   errNickLocked(data) {
     this.emit(
-      'account',
+      'sasl::account',
       new Event(
         {
           account: null,

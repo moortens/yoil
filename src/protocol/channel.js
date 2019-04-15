@@ -55,7 +55,7 @@ class Channel extends Base {
     const [channel, account = null, realname = null] = params;
 
     this.emit(
-      'join',
+      'channel::join',
       new Event(
         {
           nick,
@@ -79,7 +79,7 @@ class Channel extends Base {
     const { nick, ident, hostname } = Base.parseUserHost(userhost);
 
     this.emit(
-      'topic',
+      'channel::topic',
       new Event(
         {
           topic,
@@ -106,7 +106,7 @@ class Channel extends Base {
     const [channel, topic] = params;
 
     this.emit(
-      'topic',
+      'channel::topic',
       new Event(
         {
           nick,
@@ -135,7 +135,7 @@ class Channel extends Base {
   userlist(data) {
     const [, channel] = data.params;
     this.emit(
-      'members',
+      'channel::members',
       new Event(
         {
           channel,
@@ -154,7 +154,7 @@ class Channel extends Base {
       params: [reason],
     } = data;
     this.emit(
-      'quit',
+      'channel::quit',
       new Event(
         {
           nick,
@@ -175,7 +175,7 @@ class Channel extends Base {
       params: [target, channel],
     } = data;
     this.emit(
-      'invite',
+      'channel::invite',
       new Event(
         {
           nick,
@@ -197,7 +197,7 @@ class Channel extends Base {
       params: [channel, reason],
     } = data;
     this.emit(
-      'part',
+      'channel::part',
       new Event(
         {
           nick,
@@ -216,7 +216,7 @@ class Channel extends Base {
     const [channel, target, reason] = params;
 
     this.emit(
-      'kick',
+      'channel::kick',
       new Event(
         {
           nick,
@@ -287,7 +287,7 @@ class Channel extends Base {
       }
     });
 
-    this.emit('mode', res);
+    this.emit('channel::mode', res);
   }
 
   error(data) {

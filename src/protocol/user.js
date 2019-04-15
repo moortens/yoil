@@ -18,7 +18,7 @@ class User extends Base {
     } = data;
 
     this.emit(
-      'chghost',
+      'user::chghost',
       new Event(
         {
           nick,
@@ -40,7 +40,7 @@ class User extends Base {
       params: [account],
     } = data;
     this.emit(
-      'account-notify',
+      'user::account-notify',
       new Event(
         {
           nick,
@@ -58,7 +58,7 @@ class User extends Base {
     } = data;
 
     this.emit(
-      'invite-notify',
+      'user::invite-notify',
       new Event(
         {
           nick: invitedNick,
@@ -79,7 +79,7 @@ class User extends Base {
     } = data;
 
     this.emit(
-      'away-notify',
+      'user::away-notify',
       new Event(
         {
           nick,

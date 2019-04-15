@@ -15,16 +15,16 @@ const client = new irc.Client(config);
 
 client.connect();
 
-client.on('registered', ({ server }) => {
+client.on('server::egistered', ({ server }) => {
   console.log(`Connected to ${server}`);
   client.join('#channel');
 });
 
-client.on('topic', ({ channel, nick, topic }) => {
+client.on('channel::topic', ({ channel, nick, topic }) => {
   console.log(`${channel} -- "${topic}" by ${nick}`);
 });
 
-client.on('account', ({ account, error }) => {
+client.on('sasl::login', ({ account, error }) => {
   if (error) {
     console.log('SASL unsuccessful');
   } else {
@@ -36,16 +36,18 @@ client.on('privmsg', () => {
   console.log('I received a message!');
 });
 
-client.on('join', data => {
+client.on('channel::join', data => {
   const { channel, nick } = data;
   client.privmsg(channel, `Hello there, ${nick}`);
 });
 
-client.on('part', data => {
+client.on('channel::part', data => {
   console.log(data);
 });
 
-client.on('motd', data => console.log(data));
+client.on('server::motd', data => console.log(data));
 
 client.on('error', data => console.log(data));
+
+client.on('stream', data => console.log(data.type));
 // client.on('data', data => console.log(data))
