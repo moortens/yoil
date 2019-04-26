@@ -49,5 +49,7 @@ client.on('server::motd', data => console.log(data));
 
 client.on('error', data => console.log(data));
 
-client.on('stream', data => console.log(data.type));
-// client.on('data', data => console.log(data))
+client.on('stream', data => {
+  console.log(data.type);
+  console.log(data);
+});
