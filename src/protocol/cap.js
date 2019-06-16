@@ -194,7 +194,7 @@ class Cap extends Base {
   }
 
   attemptSaslAuthentication() {
-    const preferedSaslMechanisms = this.config.get('saslPreferedMechanisms');
+    const preferedSaslMechanisms = this.config.saslPreferedMechanisms;
     const knownSaslMechanisms = this.supportedCapabilities.get('sasl');
 
     if (knownSaslMechanisms === null || knownSaslMechanisms === undefined) {

@@ -37,5 +37,14 @@
   },
   "engines": {
     "node": ">=9.11.0"
+  },
+  "dependencies": {
+    "events": "^3.0.0",
+    "js-crypto-hash": "^0.4.2",
+    "js-crypto-hmac": "^0.4.3",
+    "js-crypto-pbkdf": "^0.3.4",
+    "js-crypto-random": "^0.3.2",
+    "randombytes": "^2.1.0",
+    "safe-buffer": "^5.1.2"
   }
 }
