@@ -1,4 +1,8 @@
-const crypto = require('crypto');
+const pbkdf2 = require('pbkdf2');
+const createHmac = require('create-hmac');
+const createHash = require('create-hash');
+const randomBytes = require('randombytes');
+const timingSafeEqual = require('timing-safe-equal');
 
 const Base = require('./base');
 const Event = require('../event');
@@ -187,25 +191,23 @@ class Sasl extends Base {
   }
 
   static createNonce() {
-    return crypto.randomBytes(32).toString('hex');
+    return randomBytes(32).toString('hex');
   }
 
   createHmac(key, data) {
-    return crypto
-      .createHmac(this.scramAlgorithms[this.mechanism].method, key)
+    return createHmac(this.scramAlgorithms[this.mechanism].method, key)
       .update(data)
       .digest();
   }
 
   createHash(data) {
-    return crypto
-      .createHash(this.scramAlgorithms[this.mechanism].method)
+    return createHash(this.scramAlgorithms[this.mechanism].method)
       .update(data)
       .digest();
   }
 
   createPbkdf2(salt, iterations) {
-    return crypto.pbkdf2Sync(
+    return pbkdf2.pbkdf2Sync(
       this.password,
       salt,
       iterations,
@@ -297,7 +299,7 @@ class Sasl extends Base {
     );
     const verify = Buffer.from(payload.get('v'), 'base64');
 
-    if (crypto.timingSafeEqual(Buffer.from(this.serverSignature), verify)) {
+    if (timingSafeEqual(Buffer.from(this.serverSignature), verify)) {
       return true;
     }
     return false;
