@@ -1,9 +1,8 @@
-const { Buffer } = require('safe-buffer');
-
-const { getRandomBytes } = require('js-crypto-random');
-const { pbkdf2 } = require('js-crypto-pbkdf');
-const hmac = require('js-crypto-hmac');
-const hash = require('js-crypto-hash');
+const pbkdf2 = require('pbkdf2');
+const createHmac = require('create-hmac');
+const createHash = require('create-hash');
+const randomBytes = require('randombytes');
+const timingSafeEqual = require('timing-safe-equal');
 
 const Base = require('./base');
 const Event = require('../event');
@@ -56,19 +55,15 @@ class Sasl extends Base {
 
     this.scramAlgorithms = {
       'SCRAM-SHA-1': {
-        method: 'SHA-1',
+        method: 'sha1',
         length: 20,
       },
       'SCRAM-SHA-256': {
-        method: 'SHA-256',
+        method: 'sha256',
         length: 32,
       },
-      'SCRAM-SHA-384': {
-        method: 'SHA-256',
-        length: 48,
-      },
       'SCRAM-SHA-512': {
-        method: 'SHA-512',
+        method: 'sha512',
         length: 64,
       },
     };
@@ -196,26 +191,25 @@ class Sasl extends Base {
   }
 
   static createNonce() {
-    return Buffer.from(getRandomBytes(32)).toString('hex');
+    return randomBytes(32).toString('hex');
   }
 
   createHmac(key, data) {
-    return hmac.compute(
-      key,
-      data,
-      this.scramAlgorithms[this.mechanism].method,
-      key,
-    );
+    return createHmac(this.scramAlgorithms[this.mechanism].method, key)
+      .update(data)
+      .digest();
   }
 
   createHash(data) {
-    return hash.compute(data, this.scramAlgorithms[this.mechanism].method);
+    return createHash(this.scramAlgorithms[this.mechanism].method)
+      .update(data)
+      .digest();
   }
 
   createPbkdf2(salt, iterations) {
-    return pbkdf2(
+    return pbkdf2.pbkdf2Sync(
       this.password,
-      new Uint8Array(salt),
+      salt,
       iterations,
       this.scramAlgorithms[this.mechanism].length,
       this.scramAlgorithms[this.mechanism].method,
@@ -248,7 +242,7 @@ class Sasl extends Base {
     return this.header;
   }
 
-  async scramBuildChallenge(data) {
+  scramBuildChallenge(data) {
     const response = Buffer.from(data.params[0], 'base64').toString();
     const payload = new Map(
       response.split(',').map(p => {
@@ -268,15 +262,13 @@ class Sasl extends Base {
 
     const withoutProof = `c=biws,r=${nonce}`;
 
-    this.saltedPassword = await this.createPbkdf2(
+    this.saltedPassword = this.createPbkdf2(
       Buffer.from(salt, 'base64'),
       iterations,
     );
-
-    const clientKey = await this.createHmac(this.saltedPassword, 'Client Key');
-    const serverKey = await this.createHmac(this.saltedPassword, 'Server Key');
-
-    const storedKey = await this.createHash(clientKey);
+    const clientKey = this.createHmac(this.saltedPassword, 'Client Key');
+    const serverKey = this.createHmac(this.saltedPassword, 'Server Key');
+    const storedKey = this.createHash(clientKey);
 
     this.authMessage = [
       `n=${this.username},r=${this.nonce}`,
@@ -284,17 +276,15 @@ class Sasl extends Base {
       withoutProof,
     ].join(',');
 
-    const clientSignature = await this.createHmac(storedKey, this.authMessage);
-    const serverSignature = await this.createHmac(serverKey, this.authMessage);
+    const clientSignature = this.createHmac(storedKey, this.authMessage);
+    const serverSignature = this.createHmac(serverKey, this.authMessage);
     const clientXor = Sasl.xor(clientKey, clientSignature);
     const clientProof = `p=${clientXor}`;
 
     const clientFinal = [withoutProof, clientProof].join(',');
 
     this.serverSignature = serverSignature;
-    this.serverKey = serverKey;
     this.state = State.Verify;
-    this.clientFinal = clientFinal;
 
     return Buffer.from(clientFinal).toString('base64');
   }
@@ -309,13 +299,13 @@ class Sasl extends Base {
     );
     const verify = Buffer.from(payload.get('v'), 'base64');
 
-    if (Buffer.compare(this.serverSignature, verify) === 0) {
+    if (timingSafeEqual(Buffer.from(this.serverSignature), verify)) {
       return true;
     }
     return false;
   }
 
-  async authenticate(data) {
+  authenticate(data) {
     const [value] = data.params;
     this.mechanism = this.store.get('saslMechanism');
 
@@ -342,7 +332,7 @@ class Sasl extends Base {
       }
     } else if (this.mechanism.startsWith('SCRAM-SHA')) {
       if (this.state === State.Challenge) {
-        const challengeResponse = await this.scramBuildChallenge(data);
+        const challengeResponse = this.scramBuildChallenge(data);
         this.send(new Message('AUTHENTICATE', challengeResponse));
       } else if (this.state === State.Verify) {
         if (this.scramVerifySignature(data)) {

@@ -2,7 +2,7 @@ const initiateProtocolHandlers = require('./protocol');
 const Store = require('./store');
 const Config = require('./config');
 const Message = require('./message');
-const Connection = require('./connection');
+const Connection = require('./websocket');
 /**
  *
  * todo:

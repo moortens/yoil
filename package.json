@@ -39,12 +39,12 @@
     "node": ">=9.11.0"
   },
   "dependencies": {
+    "create-hash": "^1.2.0",
+    "create-hmac": "^1.1.7",
     "events": "^3.0.0",
-    "js-crypto-hash": "^0.4.2",
-    "js-crypto-hmac": "^0.4.3",
-    "js-crypto-pbkdf": "^0.3.4",
-    "js-crypto-random": "^0.3.2",
+    "pbkdf2": "^3.0.17",
     "randombytes": "^2.1.0",
-    "safe-buffer": "^5.1.2"
+    "safe-buffer": "^5.1.2",
+    "timing-safe-equal": "^1.0.0"
   }
 }
