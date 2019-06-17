@@ -8,6 +8,7 @@ class Messages extends Base {
     this.store.addDesiredCapability('draft/labeled-response');
     this.store.addDesiredCapability('draft/message-tags-0.2');
     this.store.addDesiredCapability('server-time');
+    this.store.addDesiredCapability('echo-message');
 
     this.addCommandListener('NOTICE', this.message.bind(this));
     this.addCommandListener('PRIVMSG', this.message.bind(this));

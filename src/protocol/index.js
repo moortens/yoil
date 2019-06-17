@@ -5,7 +5,7 @@ const ChannelHandler = require('./channel');
 const BatchHandler = require('./batch');
 const SaslHandler = require('./sasl');
 const UserHandler = require('./user');
-// const ErrorHandler = require('./errors');
+const ErrorHandler = require('./errors');
 
 module.exports = client => {
   client.use(CapHandler);
@@ -15,5 +15,5 @@ module.exports = client => {
   client.use(BatchHandler);
   client.use(SaslHandler);
   client.use(UserHandler);
-  // client.use(ErrorHandler);
+  client.use(ErrorHandler);
 };

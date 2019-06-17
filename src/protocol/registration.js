@@ -7,6 +7,7 @@ class Registration extends Base {
     super(client);
 
     this.store.addDesiredCapability('extended-join');
+    this.store.addDesiredCapability('echo-message');
 
     this.addConnectionListener('connected', this.register.bind(this));
 

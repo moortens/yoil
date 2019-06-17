@@ -5,7 +5,7 @@ class Batch extends Base {
   constructor(client) {
     super(client);
 
-    this.store.addDesiredCapability('extended-join');
+    this.store.addDesiredCapability('batch');
 
     this.addCommandListener('BATCH', this.batch.bind(this));
     this.batch = new Map();

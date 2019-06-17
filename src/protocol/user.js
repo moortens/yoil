@@ -5,6 +5,12 @@ class User extends Base {
   constructor(client) {
     super(client);
 
+    this.store.addDesiredCapability('account-notify');
+    this.store.addDesiredCapability('account-tag');
+    this.store.addDesiredCapability('away-notify');
+    this.store.addDesiredCapability('chghost');
+    this.store.addDesiredCapability('invite-notify');
+
     this.addCommandListener('CHGHOST', this.chghost.bind(this));
     this.addCommandListener('ACCOUNT', this.account.bind(this));
     this.addCommandListener('INVITE', this.invite.bind(this));

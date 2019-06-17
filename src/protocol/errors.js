@@ -6,7 +6,7 @@ class Errors extends Base {
   constructor(client) {
     super(client);
 
-    const events = this.handlers
+    const events = this.events
       .eventNames()
       .filter(name => name.startsWith('ERR_'));
 

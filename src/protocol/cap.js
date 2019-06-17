@@ -22,26 +22,11 @@ class Cap extends Base {
     this.addCommandListener('CAP', this.negotiate.bind(this));
 
     this.store.addDesiredCapability('cap-notify');
-
-    this.store.addDesiredCapability('account-notify');
-    this.store.addDesiredCapability('account-tag');
-    this.store.addDesiredCapability('away-notify');
-    this.store.addDesiredCapability('batch');
-    this.store.addDesiredCapability('cap-notify');
-    this.store.addDesiredCapability('chghost');
-    this.store.addDesiredCapability('draft/labeled-response');
     this.store.addDesiredCapability('draft/languages');
-    this.store.addDesiredCapability('draft/message-tags-0.2');
-    this.store.addDesiredCapability('message-tags');
     this.store.addDesiredCapability('draft/rename');
     this.store.addDesiredCapability('draft/resume-0.3');
     this.store.addDesiredCapability('draft/setname');
-    this.store.addDesiredCapability('echo-message');
-    this.store.addDesiredCapability('extended-join');
-    this.store.addDesiredCapability('invite-notify');
-    this.store.addDesiredCapability('multi-prefix');
     this.store.addDesiredCapability('oragono.io/maxline');
-    this.store.addDesiredCapability('userhost-in-names');
     // this.store.addDesiredCapability('sts');
   }
 
