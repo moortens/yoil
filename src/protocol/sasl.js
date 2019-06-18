@@ -140,7 +140,7 @@ class Sasl extends Base {
       }
     } else {
       this.emit(
-        'error',
+        'sasl::error',
         new Error(
           {
             message: `No supported SASL mechanisms, server only lists ${mechanisms}`,
@@ -177,7 +177,7 @@ class Sasl extends Base {
 
   errSaslTooLong(data) {
     this.emit(
-      'error',
+      'sasl::error',
       new Event(
         {
           message: 'SASL too long!',
@@ -193,7 +193,7 @@ class Sasl extends Base {
 
   errSaslAlready(data) {
     this.emit(
-      'error',
+      'sasl::error',
       new Event(
         {
           message: 'SASL already authenticated',
