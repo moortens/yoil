@@ -9,15 +9,7 @@ class Config {
       port: 6697,
       password: null,
 
-      webirc: false,
-      webircGateway: null,
-      webircPassword: null,
-
       tls: true,
-      tlsCipher: null,
-      tlsCert: null,
-      tlsKey: null,
-      tlsRejectUnauthorized: false,
 
       sasl: true,
       saslUsername: null,

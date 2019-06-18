@@ -172,7 +172,12 @@ class Sasl extends Base {
     if (this.negotiatingSaslMechanism) {
       return;
     }
-    this.send(new Message('CAP', 'END'));
+
+    if (this.config.saslDisconnectOnFailure) {
+      this.client.close();
+    } else {
+      this.send(new Message('CAP', 'END'));
+    }
   }
 
   errSaslTooLong(data) {
