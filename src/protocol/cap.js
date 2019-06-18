@@ -4,7 +4,6 @@ const Message = require('../message');
 
 /**
  * todo
- * - sts policy, duration, preload
  * - cap nak
  * - make it all nicer...
  */
@@ -17,21 +16,10 @@ class Cap extends Base {
     this.refusedCapabilities = [];
 
     this.prependConnectionListener('connected', this.initialize.bind(this));
-    this.prependConnectionListener('disconnect', this.sts.bind(this));
 
     this.addCommandListener('CAP', this.negotiate.bind(this));
 
     this.store.addDesiredCapability('cap-notify');
-    this.store.addDesiredCapability('draft/languages');
-    this.store.addDesiredCapability('draft/rename');
-    this.store.addDesiredCapability('draft/resume-0.3');
-    this.store.addDesiredCapability('draft/setname');
-    this.store.addDesiredCapability('oragono.io/maxline');
-    // this.store.addDesiredCapability('sts');
-  }
-
-  sts() {
-    return this;
   }
 
   initialize() {
@@ -99,23 +87,49 @@ class Cap extends Base {
       return;
     }
 
-    /*
-    if (this.supportedCapabilities.has('sts')) {
-      const sts = this.supportedCapabilities.get('sts');
-      if (sts[1] && !this.client.secure) {
-        this.client.port = sts[1];
-        this.client.secure = true;
-        // return this.client.disconnect();
-        // console.log("HELLOOOOO")
-      }
-    }
-    */
+    const requestCapabilities = new Set();
 
-    const requestCapabilities = this.store
+    this.store
       .getDesiredCapabilities()
-      .filter(capability => this.supportedCapabilities.has(capability));
+      .filter(capability => {
+        const dependants = this.store.getDesiredCapabilityDependants(
+          capability,
+        );
 
-    this.send(new Message('CAP', 'REQ', requestCapabilities.join(' ')));
+        if (dependants.length === 0) {
+          return true;
+        }
+
+        const shouldAppend = dependants.every(cap => {
+          if (cap instanceof Array) {
+            return cap.some(c => this.supportedCapabilities.has(c));
+          }
+
+          return this.supportedCapabilities.has(cap);
+        });
+
+        if (!shouldAppend) {
+          return false;
+        }
+
+        dependants.forEach(cap => {
+          if (cap instanceof Array) {
+            cap
+              .filter(c => this.supportedCapabilities.has(c))
+              .map(c => requestCapabilities.add(c));
+          } else {
+            requestCapabilities.add(cap);
+          }
+        });
+
+        return true;
+      })
+      .filter(capability => this.supportedCapabilities.has(capability))
+      .forEach(capability => requestCapabilities.add(capability));
+
+    this.send(
+      new Message('CAP', 'REQ', Array.from(requestCapabilities).join(' ')),
+    );
   }
 
   ack(data) {

@@ -68,6 +68,19 @@ class Sasl extends Base {
       },
     };
 
+    this.scramErrors = [
+      'channel-binding-not-supported',
+      'authzid-too-long',
+      'invalid-username-encoding',
+      'extensions-not-supported',
+      'nonce-length-unacceptable',
+      'invalid-username-encoding',
+      'digest-algorithm-mismatch',
+      'extensions-not-supported',
+      'other-error',
+      'invalid-proof',
+    ];
+
     this.attemptedSaslMechanisms = new Set();
     this.negotiatingSaslMechanism = true;
   }
@@ -242,17 +255,28 @@ class Sasl extends Base {
     return this.header;
   }
 
-  scramBuildChallenge(data) {
-    const response = Buffer.from(data.params[0], 'base64').toString();
-    const payload = new Map(
-      response.split(',').map(p => {
+  static scramTokenizePayload(data) {
+    return new Map(
+      data.split(',').map(p => {
         const [, y, z] = p.match(/^([^=]*)=(.*)$/);
         return [y, z];
       }),
     );
+  }
+
+  scramBuildChallenge(data) {
+    const payload = Sasl.scramTokenizePayload(
+      Buffer.from(data.params[0], 'base64').toString(),
+    );
 
     if (payload.has('e')) {
-      // fix: proper error handling
+      const error = payload.get('e');
+
+      this.emit('sasl::error', {
+        error,
+        mechanism: this.mechanism,
+      });
+
       return '*';
     }
 
@@ -290,13 +314,21 @@ class Sasl extends Base {
   }
 
   scramVerifySignature(data) {
-    const response = Buffer.from(data.params[0], 'base64').toString();
-    const payload = new Map(
-      response.split(',').map(p => {
-        const [, y, z] = p.match(/^([^=]*)=(.*)$/);
-        return [y, z];
-      }),
+    const payload = Sasl.scramTokenizePayload(
+      Buffer.from(data.params[0], 'base64').toString(),
     );
+
+    if (payload.has('e')) {
+      const error = payload.get('e');
+
+      this.emit('sasl::error', {
+        error,
+        mechanism: this.mechanism,
+      });
+
+      return '*';
+    }
+
     const verify = Buffer.from(payload.get('v'), 'base64');
 
     if (timingSafeEqual(Buffer.from(this.serverSignature), verify)) {

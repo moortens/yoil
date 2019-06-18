@@ -5,10 +5,16 @@ class Messages extends Base {
   constructor(client) {
     super(client);
 
-    this.store.addDesiredCapability('draft/labeled-response');
-    this.store.addDesiredCapability('draft/message-tags-0.2');
     this.store.addDesiredCapability('server-time');
-    this.store.addDesiredCapability('echo-message');
+    this.store.addDesiredCapability(['draft/message-tags-0.2', 'message-tags']);
+    this.store.addDesiredCapability([
+      'draft/labeled-response',
+      'labeled-response',
+    ]);
+    this.store.addDesiredCapability('echo-message', [
+      ['draft/message-tags-0.2', 'message-tags'],
+      ['draft/labeled-response', 'labeled-response'],
+    ]);
 
     this.addCommandListener('NOTICE', this.message.bind(this));
     this.addCommandListener('PRIVMSG', this.message.bind(this));
@@ -22,16 +28,16 @@ class Messages extends Base {
     );
   }
 
-  static isServerMessage({ prefix }, server) {
-    return prefix === server || server === undefined;
-  }
-
   static getCtcpCommandAndValue({ params }) {
     const [, command, value = null] = params[params.length - 1].match(
       /\1([^\s|$|\1]+)(?:\s([^$|\1]+))?\1?/,
     );
 
     return [command, value];
+  }
+
+  static isServerMessage({ prefix }, server) {
+    return prefix === server || server === undefined;
   }
 
   message(data) {

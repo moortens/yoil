@@ -80,17 +80,17 @@ class Base {
   emit(event, data) {
     if (data.tags) {
       if (data.tags.get('batch')) {
-        return this.store.enqueueBatchedResponse(data.tags.get('batch'), data);
+        return this.store.enqueueBatchedResponse(data.tags.get('batch'), {
+          event,
+          ...data,
+        });
       }
     }
 
-    Object.defineProperty(data, 'type', {
-      writable: false,
-      value: event,
+    return this.client.emit(event, {
+      event,
+      ...data,
     });
-    this.client.emit('stream', data);
-
-    return this.client.emit(event, data);
   }
 
   static parseModeInUserhost(str) {

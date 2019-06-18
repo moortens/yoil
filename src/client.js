@@ -1,8 +1,10 @@
 const initiateProtocolHandlers = require('./protocol');
-const Store = require('./store');
 const Config = require('./config');
 const Message = require('./message');
 const Connection = require('./websocket');
+
+const store = require('./store');
+
 /**
  *
  * todo:
@@ -18,7 +20,7 @@ class Client extends Connection {
     super(config);
 
     this.config = config;
-    this.store = new Store();
+    this.store = store;
 
     this.store.set('connected', false);
     this.store.set('registered', false);
@@ -40,35 +42,41 @@ class Client extends Connection {
     return this;
   }
 
+  send(message) {
+    super.send(message);
+
+    return message.label;
+  }
+
   join(channel, key = undefined) {
     if (channel instanceof Array) {
-      this.send(new Message('JOIN', channel.join(','), key));
+      return this.send(new Message('JOIN', channel.join(','), key));
     }
-    this.send(new Message('JOIN', channel, key));
+    return this.send(new Message('JOIN', channel, key));
   }
 
   part(channel, reason = undefined) {
-    this.send(new Message('PART', channel, reason));
+    return this.send(new Message('PART', channel, reason));
   }
 
   list() {
-    this.send(new Message('LIST'));
+    return this.send(new Message('LIST'));
   }
 
   topic(channel, topic = undefined) {
-    this.send(new Message('TOPIC', topic));
+    return this.send(new Message('TOPIC', topic));
   }
 
   motd(target = undefined) {
-    this.send(new Message('MOTD', target));
+    return this.send(new Message('MOTD', target));
   }
 
   stats(query, target = undefined) {
-    this.send(new Message('STATS', query, target));
+    return this.send(new Message('STATS', query, target));
   }
 
   privmsg(target, message) {
-    this.send(new Message('PRIVMSG', target, message));
+    return this.send(new Message('PRIVMSG', target, message));
   }
 
   quit(message) {

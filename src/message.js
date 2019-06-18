@@ -1,3 +1,7 @@
+const uuid = require('uuid/v4');
+
+const store = require('./store');
+
 class Message {
   constructor(data, ...params) {
     this.tags = new Map();
@@ -33,6 +37,11 @@ class Message {
     }
   }
 
+  set(key, value) {
+    this.tags.set(key, value);
+    return this;
+  }
+
   get time() {
     if (this.tags.has('time')) {
       return new Date(this.tags.get('time'));
@@ -48,13 +57,46 @@ class Message {
     return null;
   }
 
-  set(key, value) {
-    this.tags.set(key, value);
-    return this;
+  get msgid() {
+    if (this.tags.has('msgid')) {
+      return this.tags.get('msgid');
+    }
+
+    if (this.tags.has('draft/msgid')) {
+      return this.tags.get('draft/msgid');
+    }
+
+    return null;
+  }
+
+  get label() {
+    if (this.tags.has('label')) {
+      return this.tags.get('label');
+    }
+
+    if (this.tags.has('draft/label')) {
+      return this.tags.get('draft/label');
+    }
+
+    return null;
   }
 
   toString() {
     let message = [];
+
+    if (
+      store.isEnabledCapability([
+        'draft/labeled-response',
+        'labeled-response',
+      ]) &&
+      store.isEnabledCapability('batch') &&
+      store.isEnabledCapability(['draft/message-tags-0.2', 'message-tags'])
+    ) {
+      if (!this.tags.has('draft/label')) {
+        this.tags.set('draft/label', uuid());
+      }
+    }
+
     if (this.tags.size > 0) {
       const escapeMap = {
         ';': '\\:',
@@ -101,6 +143,7 @@ class Message {
           }),
       );
     }
+
     return message.join(' ');
   }
 }

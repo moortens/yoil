@@ -18,8 +18,8 @@ class Event {
         }
 
         if (target.context) {
-          if (target.context.tags.has(name)) {
-            return target.context.tags.get(name);
+          if (target.context[name]) {
+            return Reflect.get(target.context, name);
           }
         }
         return undefined;

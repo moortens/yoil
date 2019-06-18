@@ -2,7 +2,7 @@ class Store {
   constructor() {
     this.store = new Map();
 
-    this.desiredCapabilities = new Set();
+    this.desiredCapabilities = new Map();
     this.enabledCapabilities = new Set();
 
     this.advertisedFeatures = new Map();
@@ -22,15 +22,32 @@ class Store {
    * additional data can be used to check if the sasl capability supports a
    * sasl authentication mechanism the client supports.
    *
-   * @param {String} cap - name of capability
-   * @param {Array} [value=null] - array of accepted values for capability
+   * @param {String|Array} data - string or array of capability/-ies
+   * @param {Array} dependants - an array of capabilities that must be present,
+   *                             dependants get added to desired capabilities.
    */
-  addDesiredCapability(cap) {
-    if (cap === undefined) {
+  addDesiredCapability(data, dependants = []) {
+    if (data === undefined) {
       return;
     }
 
-    this.desiredCapabilities.add(cap);
+    const caps = data instanceof Array ? [...data] : [data];
+    caps.forEach(cap => {
+      dependants.forEach(capability => {
+        if (!this.desiredCapabilities.has(capability)) {
+          this.addDesiredCapability(cap, []);
+        }
+      });
+
+      if (this.desiredCapabilities.has(cap)) {
+        this.desiredCapabilities.set(cap, [
+          ...this.desiredCapabilities.get(cap),
+          ...dependants,
+        ]);
+      } else {
+        this.desiredCapabilities.set(cap, [...dependants]);
+      }
+    });
   }
 
   /**
@@ -39,7 +56,17 @@ class Store {
    * @returns {Map} The desired capabilities
    */
   getDesiredCapabilities() {
-    return Array.from(this.desiredCapabilities);
+    return Array.from(this.desiredCapabilities.keys());
+  }
+
+  /**
+   * Returns an array of dependants of the given capability.
+   *
+   * @param {String} cap - capability to get dependants of
+   * @returns {Array} An array of dependants
+   */
+  getDesiredCapabilityDependants(cap) {
+    return this.desiredCapabilities.get(cap);
   }
 
   /**
@@ -87,6 +114,10 @@ class Store {
    * @param {String} cap
    */
   isEnabledCapability(cap) {
+    if (cap instanceof Array) {
+      return cap.some(c => this.enabledCapabilities.has(c));
+    }
+
     return this.enabledCapabilities.has(cap);
   }
 
@@ -132,4 +163,4 @@ class Store {
   }
 }
 
-module.exports = Store;
+module.exports = new Store();

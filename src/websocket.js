@@ -55,12 +55,8 @@ class Connection extends EventEmitter {
     return this.socket.send(`${data}\r\n`);
   }
 
-  end() {
-    this.socket.end();
-  }
-
-  destroy() {
-    this.socket.destroy();
+  close() {
+    this.socket.close();
   }
 }
 
