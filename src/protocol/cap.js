@@ -15,7 +15,10 @@ class Cap extends Base {
     this.acknowledgedCapabilities = [];
     this.refusedCapabilities = [];
 
-    this.prependConnectionListener('connected', this.initialize.bind(this));
+    this.prependConnectionListener(
+      'connection::connected',
+      this.initialize.bind(this),
+    );
 
     this.addCommandListener('CAP', this.negotiate.bind(this));
 

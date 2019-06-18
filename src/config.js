@@ -31,7 +31,7 @@ class Config {
       ]),
 
       autoReconnect: false,
-      autoReconnectDelay: 60,
+      autoReconnectDelay: 10,
       autoReconnectMaxRetries: 3,
     };
 

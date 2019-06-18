@@ -26,7 +26,7 @@ class Base {
 
     this.events = new EventEmitter();
 
-    this.client.on('data', data => {
+    this.client.on('connection::data', data => {
       this.events.emit(data.command, data);
     });
   }

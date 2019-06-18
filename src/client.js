@@ -1,7 +1,7 @@
 const initiateProtocolHandlers = require('./protocol');
 const Config = require('./config');
 const Message = require('./message');
-const Connection = require('./websocket');
+const Connection = require('./connection');
 
 const store = require('./store');
 
@@ -22,11 +22,21 @@ class Client extends Connection {
     this.config = config;
     this.store = store;
 
+    this.reconnectTimer = null;
+
     this.store.set('connected', false);
     this.store.set('registered', false);
+    this.store.set('reconnect', true);
+    this.store.set('reconnectAttempts', 0);
 
-    this.on('connected', () => {
+    this.on('connection::connected', () => {
+      this.store.set('reconnectAttempts', 0);
       this.store.set('connected', true);
+    });
+
+    this.on('connection::disconnected', () => {
+      this.store.set('connected', false);
+      this.reconnect();
     });
 
     initiateProtocolHandlers(this);
@@ -42,10 +52,63 @@ class Client extends Connection {
     return this;
   }
 
+  close() {
+    super.close();
+
+    this.store.set('reconnect', false);
+  }
+
   send(message) {
     super.send(message);
 
     return message.label;
+  }
+
+  /**
+   * Reconnect tries to reconnect to the server if there are more reconnect
+   * attempts left. Configured with in the config passed to client:
+   *
+   * autoReconnect: false,
+   * autoReconnectDelay: 60,
+   * autoReconnectMaxRetries: 3,
+   *
+   * @param {Boolean} reset if true, resets attempt count and instantly
+   *   attempts to connect.
+   */
+  reconnect(reset = false) {
+    if (reset) {
+      this.store.set('reconnectAttempts', 0);
+
+      this.cancel();
+      this.connect();
+
+      return;
+    }
+
+    if (this.store.get('reconnect')) {
+      if (this.config.autoReconnect) {
+        const reconnectAttempts = this.store.get('reconnectAttempts') + 1;
+
+        if (reconnectAttempts < this.config.autoReconnectMaxRetries) {
+          this.reconnectTimer = setTimeout(() => {
+            this.connect();
+          }, this.config.autoReconnectDelay * reconnectAttempts * 1000);
+
+          this.store.set('reconnectAttempts', reconnectAttempts);
+
+          this.emit('connection::reconnect', {
+            retry: reconnectAttempts,
+            max: this.config.autoReconnectMaxRetries,
+          });
+        }
+      }
+    }
+  }
+
+  cancel() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+    }
   }
 
   join(channel, key = undefined) {
@@ -82,14 +145,6 @@ class Client extends Connection {
   quit(message) {
     this.send(new Message('QUIT', message));
     this.close();
-  }
-
-  close() {
-    if (this.store.get('registered')) {
-      this.end();
-    } else {
-      this.destroy();
-    }
   }
 }
 
