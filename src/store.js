@@ -131,6 +131,12 @@ class Store {
     return this.advertisedFeatures.set(param, value);
   }
 
+  /**
+   * Returns an advertised feature
+   *
+   * @param {String} param name of feature
+   * @returns {*} the value of the advertised feature
+   */
   getAdvertisedFeature(param) {
     return this.advertisedFeatures.get(param);
   }
