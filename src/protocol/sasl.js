@@ -165,7 +165,12 @@ class Sasl extends Base {
         data,
       ),
     );
-    this.send(new Message('CAP', 'END'));
+
+    if (this.config.saslDisconnectOnFailure) {
+      this.client.close();
+    } else {
+      this.send(new Message('CAP', 'END'));
+    }
   }
 
   errSaslFail() {
@@ -190,10 +195,20 @@ class Sasl extends Base {
         data,
       ),
     );
+
+    if (this.config.saslDisconnectOnFailure) {
+      this.client.close();
+    } else {
+      this.send(new Message('CAP', 'END'));
+    }
   }
 
   errSaslAborted() {
-    this.send(new Message('CAP', 'END'));
+    if (this.config.saslDisconnectOnFailure) {
+      this.client.close();
+    } else {
+      this.send(new Message('CAP', 'END'));
+    }
   }
 
   errSaslAlready(data) {
