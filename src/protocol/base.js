@@ -78,12 +78,15 @@ class Base {
    * @param  {...any} args
    */
   emit(event, data) {
-    if (data.tags) {
-      if (data.tags.get('batch')) {
-        return this.store.enqueueBatchedResponse(data.tags.get('batch'), {
-          event,
-          ...data,
-        });
+    if (data.context.tags) {
+      if (data.context.tags.get('batch')) {
+        return this.store.enqueueBatchedResponse(
+          data.context.tags.get('batch'),
+          {
+            event,
+            ...data,
+          },
+        );
       }
     }
 

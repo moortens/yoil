@@ -6,6 +6,7 @@ const BatchHandler = require('./batch');
 const SaslHandler = require('./sasl');
 const UserHandler = require('./user');
 const ErrorHandler = require('./errors');
+const ServerHandler = require('./server');
 
 module.exports = client => {
   client.use(CapHandler);
@@ -15,5 +16,6 @@ module.exports = client => {
   client.use(BatchHandler);
   client.use(SaslHandler);
   client.use(UserHandler);
+  client.use(ServerHandler);
   client.use(ErrorHandler);
 };
