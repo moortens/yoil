@@ -158,8 +158,8 @@ class Registration extends Base {
       'server::nickname-in-use',
       new Event(
         {
-          nickname,
-          alternateNickname,
+          original: nickname,
+          alternate: alternateNickname,
           fixing: this.config.fixNicknameInUse,
           reason,
         },
