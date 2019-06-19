@@ -36,15 +36,15 @@ class Connection extends EventEmitter {
       `${this.tls ? 'wss' : 'ws'}://${host}:${port}/`,
     );
     this.socket.onopen = () => {
-      this.emit('connection::connected');
+      this.emit('socket::connected');
     };
 
-    this.socket.onerror = err => this.emit('connection::error', err);
+    this.socket.onerror = err => this.emit('socket::error', err);
     this.socket.onclose = () => {
-      this.emit('connection::disconnected');
+      this.emit('socket::disconnected');
     };
     this.socket.onmessage = ({ data }) =>
-      this.emit('connection::data', Parser.parse(data));
+      this.emit('socket::data', Parser.parse(data));
   }
 
   send(data) {

@@ -16,7 +16,7 @@ class Cap extends Base {
     this.refusedCapabilities = [];
 
     this.prependConnectionListener(
-      'connection::connected',
+      'socket::connected',
       this.initialize.bind(this),
     );
 

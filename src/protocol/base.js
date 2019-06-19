@@ -30,7 +30,7 @@ class Base {
 
     this.events = new EventEmitter();
 
-    this.client.on('connection::data', data => {
+    this.client.on('socket::data', data => {
       this.events.emit(data.command, data);
     });
   }

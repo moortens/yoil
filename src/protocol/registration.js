@@ -8,10 +8,7 @@ class Registration extends Base {
 
     this.store.addDesiredCapability('extended-join');
 
-    this.addConnectionListener(
-      'connection::connected',
-      this.register.bind(this),
-    );
+    this.addConnectionListener('socket::connected', this.register.bind(this));
 
     this.addCommandListener('RPL_WELCOME', this.welcome.bind(this));
     this.addCommandListener('RPL_ISUPPORT', this.isupport.bind(this));

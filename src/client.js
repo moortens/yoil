@@ -29,12 +29,12 @@ class Client extends Connection {
     this.store.set('reconnect', true);
     this.store.set('reconnectAttempts', 0);
 
-    this.on('connection::connected', () => {
+    this.on('socket::connected', () => {
       this.store.set('reconnectAttempts', 0);
       this.store.set('connected', true);
     });
 
-    this.on('connection::disconnected', () => {
+    this.on('socket::disconnected', () => {
       this.store.set('connected', false);
       this.reconnect();
     });
@@ -96,7 +96,7 @@ class Client extends Connection {
 
           this.store.set('reconnectAttempts', reconnectAttempts);
 
-          this.emit('connection::reconnect', {
+          this.emit('socket::reconnect', {
             retry: reconnectAttempts,
             max: this.config.autoReconnectMaxRetries,
           });
