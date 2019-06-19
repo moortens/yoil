@@ -11,16 +11,78 @@ of when writing the framework.
 
 Socket events:
 1. *socket::connected* - a raw socket has been established
+	```javascript
+    {}
+    ```
 2. *socket::disconnected* - the socket has lost its connection
+    ```javascript	
+    {}
+    ```
 3. *socket::reconnect* - a reconnect attempt has started
-4. *socket::data* - low-level parsed lines from IRC before middleware events
+	```javascript
+    {
+    	event: 'socket::reconnect',
+    	retry: 1,
+        max: 3,
+    }
+    ```
+4. *socket::data* - low-level parsed lines from IRC before middleware events. This is also what is found in the Event object's *context* property.
+	```javascript
+    {
+    	command: 'PRIVMSG',
+		hostname: 'hostname',
+		ident: 'ident',
+		message: ':nickname!ident@hostname PRIVMSG #channel :text',
+		nick: 'nickname',
+		params: ['#channel', 'text']
+		prefix: "nickname!ident@hostname"
+		tags: Map(0) {}
+    }
+    ```
 
 Server events:
-1. *server::connect* - when a connection to the server is established
+1. *server::connect* - triggers on *socket::connected* when a connection to the server is established
+	```javascript
+    {
+    	event: 'server::connect',
+    	context: {...}
+    }
+    ```
 2. *server::registered* - you've succesfully connected to IRC
+	```javascript
+	{
+    	event: 'server::registered',
+    	server: 'localhost',
+        context: {...}
+    }
+	```
 3. *server::motd* - message of the day
+	```javascript
+    {
+    	event: 'server::motd',
+        motd: [
+        	"first message of the day line",
+            "second...",
+        ],
+        server: 'localhost',
+    }
+    ```
 4. *server::disconnect* - when the connection is dropped
-5. *server::nickname-in-use* - nick was in use
+	```javascript
+    {
+    	event: 'server::disconnect',
+    }
+    ```
+5. *server::nickname-in-use* - nick was in use. If fixing is true, the library automatically attempted to fix the problem. If false, it's up to the client to fix the problem. Alternate nick can be defined by providing a callback function to your config as *fixNicknameInUseCallback* (see config docs for more information). 
+	```javascript
+    {
+    	event: 'server::nickname-in-use',
+        original: 'nickname',
+        alternate: 'nickname_',
+        reason: 'Nickname in use',
+        fixing: true,
+    }
+    ```
 6. *server::erroneous-nickname* - nick is badly formatted
 7. *server::notice*
 8. *server::privmsg*
