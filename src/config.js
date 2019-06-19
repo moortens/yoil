@@ -25,6 +25,9 @@ class Config {
       autoReconnect: false,
       autoReconnectDelay: 10,
       autoReconnectMaxRetries: 3,
+
+      fixNicknameInUse: true,
+      fixNicknameInUseCallback: nick => `${nick}_`,
     };
 
     Object.assign(this, defaults, opts);

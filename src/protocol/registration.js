@@ -23,6 +23,13 @@ class Registration extends Base {
     this.addCommandListener('ERR_ALREADYREGISTERED', this.error.bind(this));
     this.addCommandListener('ERR_YOUREBANNEDCREEP', this.error.bind(this));
     this.addCommandListener('ERR_NOPERMFORHOST', this.error.bind(this));
+
+    this.addCommandListener('ERR_NICKNAMEINUSE', this.nicknameInUse.bind(this));
+    this.addCommandListener(
+      'ERR_ERRONEUSNICKNAME',
+      this.erroneusNickname.bind(this),
+    );
+
     this.addCommandListener('PING', this.ping.bind(this));
 
     this.motd = new Set();
@@ -136,6 +143,47 @@ class Registration extends Base {
 
   ping(data) {
     this.send(new Message('PONG', data.params[0]));
+  }
+
+  nicknameInUse(data) {
+    const [, nickname, reason] = data.params;
+    const alternateNickname = this.config.fixNicknameInUseCallback
+      ? Reflect.apply(this.config.fixNicknameInUseCallback, undefined, [
+          nickname,
+        ])
+      : `${nickname}_`;
+
+    if (this.config.fixNicknameInUse) {
+      this.send(new Message('NICK', alternateNickname));
+    }
+
+    this.emit(
+      'server::nickname-in-use',
+      new Event(
+        {
+          nickname,
+          alternateNickname,
+          fixing: this.config.fixNicknameInUse,
+          reason,
+        },
+        data,
+      ),
+    );
+  }
+
+  erroneusNickname(data) {
+    const [, nickname, reason] = data.params;
+
+    this.emit(
+      'server::erroneous-nickname',
+      new Event(
+        {
+          nickname,
+          reason,
+        },
+        data,
+      ),
+    );
   }
 }
 
