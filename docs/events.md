@@ -9,11 +9,21 @@ the original Message object (returned by the parser). This way you can always
 show a "raw" log, or do some interesting thing with the data that I've not thought
 of when writing the framework.
 
+Socket events:
+1. *socket::connected* - a raw socket has been established
+2. *socket::disconnected* - the socket has lost its connection
+3. *socket::reconnect* - a reconnect attempt has started
+4. *socket::data* - low-level parsed lines from IRC before middleware events
+
 Server events:
 1. *server::connect* - when a connection to the server is established
 2. *server::registered* - you've succesfully connected to IRC
 3. *server::motd* - message of the day
 4. *server::disconnect* - when the connection is dropped
+5. *server::nickname-in-use* - nick was in use
+6. *server::erroneous-nickname* - nick is badly formatted
+7. *server::notice*
+8. *server::privmsg*
 
 Channel events:
 1. *channel::join*
@@ -22,16 +32,23 @@ Channel events:
 4. *channel::message*
 5. *channel::notice*
 6. *channel::mode*
+7. *channel::kick*
+8. *channel::quit*
+9. *channel::privmsg*
+10. *channel::notice*
 
 Cap events:
 1. *cap::list*
 2. *cap::ack*
+3. *cap::rejected*
 
 User events:
 1. *user::away*
 2. *user::invite*
 3. *user::chghost*
 4. *user::account*
+5. *user::privmsg*
+6. *user::notice*
 
 Sasl events:
 1. *sasl::login*
@@ -41,4 +58,4 @@ Sasl events:
 Generic events:
 1. *error*
 2. *stream* -- all events, with the original event added as type: event.
-
+3. *batch* -- if labeled-response is negotiated, commands will be prepended with a label
