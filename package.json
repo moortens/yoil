@@ -1,5 +1,14 @@
 {
   "name": "yoil",
+  "description": "simple, fairly flexible IRC library, for the browser",
+  "keywords": [
+    "irc",
+    "library",
+    "client",
+    "parser",
+    "chat",
+    "websocket"
+  ],
   "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",

@@ -14,7 +14,6 @@ class Config {
       sasl: true,
       saslUsername: null,
       saslPassword: null,
-      saslMechanism: null,
       saslDisconnectOnFailure: true,
       saslPreferedMechanisms: new Set([
         'SCRAM-SHA-512',
