@@ -6,9 +6,9 @@ class Errors extends Base {
   constructor(client) {
     super(client);
 
-    const events = this.events
-      .eventNames()
-      .filter(name => name.startsWith('ERR_'));
+    const events = Base.getCommandListenerEvents().filter(name =>
+      name.startsWith('ERR_'),
+    );
 
     Object.values(Numerics)
       .filter(name => name.startsWith('ERR') && !events.includes(name))

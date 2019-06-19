@@ -1,13 +1,17 @@
 const EventEmitter = require('events');
 const Parser = require('../parser');
 
+/*
+ * Keep a local cache of event names that are being listened for.
+ */
+const eventNames = new Set();
+
 /**
  * The **Base** class provides synthetic sugar to commonly used functions
  * in the client class.
  *
  * @author moortens
  */
-
 class Base {
   /**
    * Initializes the client object on the class, allowing for shortcut
@@ -62,6 +66,10 @@ class Base {
   }
 
   prependCommandListener(...args) {
+    const [eventName] = args;
+
+    eventNames.add(eventName);
+
     return this.events.prependListener(...args);
   }
 
@@ -70,7 +78,15 @@ class Base {
    * @param  {...any} args
    */
   addCommandListener(...args) {
+    const [eventName] = args;
+
+    eventNames.add(eventName);
+
     return this.events.addListener(...args);
+  }
+
+  static getCommandListenerEvents() {
+    return Array.from(eventNames);
   }
 
   /**
