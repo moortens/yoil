@@ -141,6 +141,15 @@ class Store {
     return this.advertisedFeatures.get(param);
   }
 
+  /**
+   * Returns all advertised features as an object
+   *
+   * @returns {Object} all advertised features
+   */
+  getAdvertisedFeatures() {
+    return Object.fromEntries(this.advertisedFeatures);
+  }
+
   enqueueBatchedResponse(batch, data) {
     const batchCache = this.batchedResponseCache.get(batch) || new Set();
 

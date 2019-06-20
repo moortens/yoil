@@ -86,6 +86,11 @@ class Registration extends Base {
 
       return this.store.setAdvertisedFeature(param, value);
     });
+
+    this.emit(
+      'server::supports',
+      new Event(Array.from(this.store.getAdvertisedFeatures()), data),
+    );
   }
 
   motdStart() {

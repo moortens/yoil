@@ -52,7 +52,8 @@ Server events:
 	```javascript
 	{
     	event: 'server::registered',
-    	server: 'localhost',
+        server: 'localhost',
+        nickname: 'nickname',
         context: {...}
     }
 	```
@@ -86,6 +87,15 @@ Server events:
 6. *server::erroneous-nickname* - nick is badly formatted
 7. *server::notice*
 8. *server::privmsg*
+9. *server::supports* - sends the advertised features supported by the ircd. Event can be sent multiple times, depending on how many RPL_ISUPPORT numerics are sent by the server. 
+    ```javascript
+    {
+        event: 'server::supports',
+        network: 'network',
+        chantypes: '#',
+        ...rest,
+    }
+    ```
 
 Channel events:
 1. *channel::join*
