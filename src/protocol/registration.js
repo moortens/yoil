@@ -49,11 +49,12 @@ class Registration extends Base {
 
   welcome(data) {
     const server = data.prefix;
+    const [nickname] = data.params;
 
     this.store.set('server', server);
     this.store.set('registered', true);
 
-    this.emit('server::registered', new Event({ server }, data));
+    this.emit('server::registered', new Event({ server, nickname }, data));
   }
 
   isupport(data) {
