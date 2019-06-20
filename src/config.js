@@ -30,6 +30,18 @@ class Config {
     };
 
     Object.assign(this, defaults, opts);
+
+    if (
+      !this.nickname ||
+      !this.username ||
+      !this.realname ||
+      !this.host ||
+      !this.port
+    ) {
+      throw new Error(
+        'Config needs to have nickname, username, realname, host and port provided',
+      );
+    }
   }
 }
 
