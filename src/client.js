@@ -1,3 +1,5 @@
+const uuid = require('uuid/v4');
+
 const initiateProtocolHandlers = require('./protocol');
 const Config = require('./config');
 const Message = require('./message');
@@ -140,6 +142,10 @@ class Client extends Connection {
 
   privmsg(target, message) {
     return this.send(new Message('PRIVMSG', target, message));
+  }
+
+  ping() {
+    return this.send(new Message('PING', uuid()));
   }
 
   quit(message) {

@@ -6,8 +6,18 @@ class Batch extends Base {
     super(client);
 
     this.store.addDesiredCapability('batch');
+    this.store.addDesiredCapability(
+      [
+        'draft/labeled-response',
+        'draft/labeled-response-0.2',
+        'labeled-response',
+      ],
+      ['batch'],
+    );
 
     this.addCommandListener('BATCH', this.batch.bind(this));
+    this.addCommandListener('ACK', this.ack.bind(this));
+
     this.batch = new Map();
   }
 
@@ -26,6 +36,7 @@ class Batch extends Base {
       if (
         this.store.isEnabledCapability([
           'draft/labeled-response',
+          'draft/labeled-response-0.2',
           'labeled-response',
         ])
       ) {
@@ -57,6 +68,31 @@ class Batch extends Base {
       this.store.batchedResponseCache.delete(reference);
       this.batch.delete(reference);
     }
+  }
+
+  ack(data) {
+    if (!data.tags.has('label') && !data.tags.has('draft/label')) {
+      this.emit(
+        'server::ack',
+        new Event(
+          {
+            error: 'Unknown acknowledgement',
+          },
+          data,
+        ),
+      );
+    }
+    const label = data.tags.get('label') || data.tags.has('draft/label');
+
+    this.emit(
+      'server::ack',
+      new Event(
+        {
+          label,
+        },
+        data,
+      ),
+    );
   }
 }
 

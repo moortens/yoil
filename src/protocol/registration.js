@@ -89,7 +89,7 @@ class Registration extends Base {
 
     this.emit(
       'server::supports',
-      new Event(Array.from(this.store.getAdvertisedFeatures()), data),
+      new Event(this.store.getAdvertisedFeatures(), data),
     );
   }
 

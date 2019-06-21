@@ -87,6 +87,7 @@ class Message {
     if (
       store.isEnabledCapability([
         'draft/labeled-response',
+        'draft/labeled-response-0.2',
         'labeled-response',
       ]) &&
       store.isEnabledCapability('batch') &&

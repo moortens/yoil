@@ -151,6 +151,16 @@ class Cap extends Base {
       this.negotiating = false;
       this.send(new Message('CAP', 'END'));
     }
+
+    this.emit(
+      'cap::ack',
+      new Event(
+        {
+          ...this.acknowledgedCapabilities,
+        },
+        data,
+      ),
+    );
   }
 
   nak(data) {

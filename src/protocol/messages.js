@@ -7,10 +7,6 @@ class Messages extends Base {
 
     this.store.addDesiredCapability('server-time');
     this.store.addDesiredCapability(['draft/message-tags-0.2', 'message-tags']);
-    this.store.addDesiredCapability([
-      'draft/labeled-response',
-      'labeled-response',
-    ]);
     this.store.addDesiredCapability('echo-message', [
       ['draft/message-tags-0.2', 'message-tags'],
       ['draft/labeled-response', 'labeled-response'],
