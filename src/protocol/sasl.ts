@@ -1,31 +1,61 @@
-const pbkdf2 = require('pbkdf2');
-const createHmac = require('create-hmac');
-const createHash = require('create-hash');
-const randomBytes = require('randombytes');
-const timingSafeEqual = require('timing-safe-equal');
+import pbkdf2 from 'pbkdf2';
+import createHmac from 'create-hmac';
+import createHash from 'create-hash';
+import randomBytes from 'randombytes';
+import timingSafeEqual from 'timing-safe-equal';
+import { Buffer } from 'buffer';
 
-const Base = require('./base');
-const Event = require('../event');
-const Message = require('../message');
+import Base from './base';
+import Event from '../event';
+import Message from '../message';
 
-const State = {
-  Initializing: 0,
-  Challenge: 1,
-  Verify: 3,
-  Verified: 4,
+enum State {
+  Uninitialized,
+  Initializing,
+  Challenge,
+  Verify,
+  Verified,
 };
 
 /**
  * fix sasl
  */
 class Sasl extends Base {
+  private username: string = null;
+  private password: string = null;
+
+  private state: State = State.Uninitialized;
+
+  private attemptedSaslMechanisms: Set<string> = new Set();
+  private negotiatingSaslMechanism: boolean = false;
+  private preferedMechanisms: Set<string> = null;
+  private mechanism: string = null;
+
+  private scramAlgorithms: object = {
+    'SCRAM-SHA-1': {
+      method: 'sha1',
+      length: 20,
+    },
+    'SCRAM-SHA-256': {
+      method: 'sha256',
+      length: 32,
+    },
+    'SCRAM-SHA-512': {
+      method: 'sha512',
+      length: 64,
+    },
+  };
+
+  private nonce: string = null;
+  private header: string = null;
+  private saltedPassword: string = null;
+  private authMessage: string = null;
+  private serverSignature: string = null;
+
   constructor(client) {
     super(client);
 
     this.preferedMechanisms = this.config.saslPreferedMechanisms;
-    if (this.preferedMechanisms instanceof String === true) {
-      this.preferedMechanisms = new Set([this.preferedMechanisms]);
-    }
 
     this.username = this.config.saslUsername;
     this.password = this.config.saslPassword;
@@ -52,37 +82,6 @@ class Sasl extends Base {
     this.addCommandListener('AUTHENTICATE', this.authenticate.bind(this));
 
     this.state = State.Initializing;
-
-    this.scramAlgorithms = {
-      'SCRAM-SHA-1': {
-        method: 'sha1',
-        length: 20,
-      },
-      'SCRAM-SHA-256': {
-        method: 'sha256',
-        length: 32,
-      },
-      'SCRAM-SHA-512': {
-        method: 'sha512',
-        length: 64,
-      },
-    };
-
-    this.scramErrors = [
-      'channel-binding-not-supported',
-      'authzid-too-long',
-      'invalid-username-encoding',
-      'extensions-not-supported',
-      'nonce-length-unacceptable',
-      'invalid-username-encoding',
-      'digest-algorithm-mismatch',
-      'extensions-not-supported',
-      'other-error',
-      'invalid-proof',
-    ];
-
-    this.attemptedSaslMechanisms = new Set();
-    this.negotiatingSaslMechanism = true;
   }
 
   loggedIn(data) {
@@ -141,7 +140,7 @@ class Sasl extends Base {
     } else {
       this.emit(
         'sasl::error',
-        new Error(
+        new Event(
           {
             message: `No supported SASL mechanisms, server only lists ${mechanisms}`,
           },
@@ -250,8 +249,8 @@ class Sasl extends Base {
   }
 
   static xor(a, b) {
-    let left = a;
-    let right = b;
+    let left: any = a;
+    let right: any = b;
 
     if (!Buffer.isBuffer(left)) left = Buffer.from(left);
     if (!Buffer.isBuffer(right)) right = Buffer.from(right);
@@ -276,7 +275,7 @@ class Sasl extends Base {
   }
 
   static scramTokenizePayload(data) {
-    return new Map(
+    return new Map<string, string>(
       data.split(',').map(p => {
         const [, y, z] = p.match(/^([^=]*)=(.*)$/);
         return [y, z];
@@ -400,4 +399,4 @@ class Sasl extends Base {
   }
 }
 
-module.exports = Sasl;
+export default Sasl;

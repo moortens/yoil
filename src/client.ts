@@ -1,11 +1,11 @@
-const uuid = require('uuid/v4');
+import uuid from 'uuid/v4';
 
-const initiateProtocolHandlers = require('./protocol');
-const Config = require('./config');
-const Message = require('./message');
-const Connection = require('./connection');
+import initiateProtocolHandlers from './protocol';
+import Config from './config';
+import Message from './message';
+import Connection from './connection';
 
-const store = require('./store');
+import store from './store';
 
 /**
  *
@@ -14,7 +14,12 @@ const store = require('./store');
  *
  */
 class Client extends Connection {
-  constructor(config = new Config()) {
+  config: Config;
+  store: any;
+
+  reconnectTimer: any;
+
+  constructor(config: Config) {
     if (!(config instanceof Config)) {
       throw new Error('You need to pass a Config object');
     }
@@ -154,4 +159,4 @@ class Client extends Connection {
   }
 }
 
-module.exports = Client;
+export default Client;

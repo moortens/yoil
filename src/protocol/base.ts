@@ -1,6 +1,9 @@
-const EventEmitter = require('events');
-const Parser = require('../parser');
+import EventEmitter from 'events';
+import Parser from '../parser';
 
+import Client from '../client';
+import Config from '../config';
+import Connection from '../connection';
 /*
  * Keep a local cache of event names that are being listened for.
  */
@@ -13,6 +16,13 @@ const eventNames = new Set();
  * @author moortens
  */
 class Base {
+  client: Client;
+  socket: Connection;
+  config: Config;
+  store: any;
+  events: EventEmitter;
+
+  listeners: [];
   /**
    * Initializes the client object on the class, allowing for shortcut
    * functions to work.
@@ -30,6 +40,8 @@ class Base {
 
     this.events = new EventEmitter();
 
+    if (this.client === null) return;
+
     this.client.on('socket::data', data => {
       this.events.emit(data.command, data);
     });
@@ -38,7 +50,7 @@ class Base {
   /**
    * Send raw data to the server.
    *
-   * @param {String} data
+   * @param {string} data
    */
   send(data) {
     return this.client.send(data);
@@ -135,4 +147,4 @@ class Base {
   }
 }
 
-module.exports = Base;
+export default Base;
