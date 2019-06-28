@@ -8,6 +8,7 @@ import { Buffer } from 'buffer';
 import Base from './base';
 import Event from '../event';
 import Message from '../message';
+import Client from '../client';
 
 enum State {
   Uninitialized,
@@ -52,7 +53,7 @@ class Sasl extends Base {
   private authMessage: string = null;
   private serverSignature: string = null;
 
-  constructor(client) {
+  constructor(client: Client) {
     super(client);
 
     this.preferedMechanisms = this.config.saslPreferedMechanisms;
@@ -84,7 +85,7 @@ class Sasl extends Base {
     this.state = State.Initializing;
   }
 
-  loggedIn(data) {
+  loggedIn(data: Message) {
     const {
       params: [, , account],
     } = data;
@@ -99,7 +100,7 @@ class Sasl extends Base {
     );
   }
 
-  loggedOut(data) {
+  loggedOut(data: Message) {
     this.emit(
       'sasl::account',
       new Event(
@@ -115,7 +116,7 @@ class Sasl extends Base {
     this.send(new Message('CAP', 'END'));
   }
 
-  saslMechs(data) {
+  saslMechs(data: Message) {
     const [, mechanisms] = data.params;
     const v = mechanisms.split(',');
 
@@ -152,7 +153,7 @@ class Sasl extends Base {
     return null;
   }
 
-  errNickLocked(data) {
+  errNickLocked(data: Message) {
     this.emit(
       'sasl::account',
       new Event(
@@ -184,7 +185,7 @@ class Sasl extends Base {
     }
   }
 
-  errSaslTooLong(data) {
+  errSaslTooLong(data: Message) {
     this.emit(
       'sasl::error',
       new Event(
@@ -210,7 +211,7 @@ class Sasl extends Base {
     }
   }
 
-  errSaslAlready(data) {
+  errSaslAlready(data: Message) {
     this.emit(
       'sasl::error',
       new Event(
@@ -226,19 +227,19 @@ class Sasl extends Base {
     return randomBytes(32).toString('hex');
   }
 
-  createHmac(key, data) {
+  createHmac(key: string, data: string) {
     return createHmac(this.scramAlgorithms[this.mechanism].method, key)
       .update(data)
       .digest();
   }
 
-  createHash(data) {
+  createHash(data: string) {
     return createHash(this.scramAlgorithms[this.mechanism].method)
       .update(data)
       .digest();
   }
 
-  createPbkdf2(salt, iterations) {
+  createPbkdf2(salt: Buffer, iterations: number) {
     return pbkdf2.pbkdf2Sync(
       this.password,
       salt,
@@ -248,7 +249,7 @@ class Sasl extends Base {
     );
   }
 
-  static xor(a, b) {
+  static xor(a: any, b: any) {
     let left: any = a;
     let right: any = b;
 
@@ -283,7 +284,7 @@ class Sasl extends Base {
     );
   }
 
-  scramBuildChallenge(data) {
+  scramBuildChallenge(data: Message) {
     const payload = Sasl.scramTokenizePayload(
       Buffer.from(data.params[0], 'base64').toString(),
     );
@@ -332,7 +333,7 @@ class Sasl extends Base {
     return Buffer.from(clientFinal).toString('base64');
   }
 
-  scramVerifySignature(data) {
+  scramVerifySignature(data: Message) {
     const payload = Sasl.scramTokenizePayload(
       Buffer.from(data.params[0], 'base64').toString(),
     );
@@ -356,7 +357,7 @@ class Sasl extends Base {
     return false;
   }
 
-  authenticate(data) {
+  authenticate(data: Message) {
     const [value] = data.params;
     this.mechanism = this.store.get('saslMechanism');
 
