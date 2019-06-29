@@ -3,7 +3,7 @@ import Parser from '../parser';
 
 import Client from '../client';
 import Config from '../config';
-import Connection from '../connection';
+import Event from '../event';
 /*
  * Keep a local cache of event names that are being listened for.
  */
@@ -15,9 +15,9 @@ const eventNames = new Set();
  *
  * @author moortens
  */
-class Base {
+abstract class Base {
   client: Client;
-  socket: Connection;
+  socket: WebSocket;
   config: Config;
   store: any;
   events: EventEmitter;
@@ -29,7 +29,7 @@ class Base {
    *
    * @param {Object} Client
    */
-  constructor(client) {
+  constructor(client: Client) {
     const { socket, config, store } = client;
 
     this.client = client;
@@ -50,9 +50,9 @@ class Base {
   /**
    * Send raw data to the server.
    *
-   * @param {string} data
+   * @param {*} data
    */
-  send(data) {
+  send(data: any) {
     return this.client.send(data);
   }
 
@@ -65,7 +65,7 @@ class Base {
    * @param  {...any} args
    * @see {@link https://nodejs.org/api/events.html#events_emitter_prependlistener_eventname_listener|prependListener}
    */
-  prependConnectionListener(...args) {
+  prependConnectionListener(...args: any[]) {
     return this.client.prependListener(...args);
   }
 
@@ -73,11 +73,11 @@ class Base {
    *
    * @param  {...any} args
    */
-  addConnectionListener(...args) {
+  addConnectionListener(...args: any[]) {
     return this.client.addListener(...args);
   }
 
-  prependCommandListener(...args) {
+  prependCommandListener(...args: any[]) {
     const [eventName] = args;
 
     eventNames.add(eventName);
@@ -89,7 +89,7 @@ class Base {
    *
    * @param  {...any} args
    */
-  addCommandListener(...args) {
+  addCommandListener(...args: any[]) {
     const [eventName] = args;
 
     eventNames.add(eventName);
@@ -105,7 +105,7 @@ class Base {
    *
    * @param  {...any} args
    */
-  emit(event, data) {
+  emit(event: string, data: Event) {
     if (data.context.tags) {
       if (data.context.tags.get('batch')) {
         return this.store.enqueueBatchedResponse(
@@ -124,7 +124,7 @@ class Base {
     });
   }
 
-  static parseModeInUserhost(str) {
+  static parseModeInUserhost(str: string) {
     const modes = ['~', '&', '@', '%', '+'];
 
     let i = 0;
@@ -136,11 +136,11 @@ class Base {
     return [str.substring(i), m];
   }
 
-  static parseUserHost(userhost) {
+  static parseUserHost(userhost: string) {
     return Parser.parseUserHost(userhost);
   }
 
-  isChannel(target) {
+  isChannel(target: string) {
     return (this.store.getAdvertisedFeature('chantypes') || '#')
       .split('')
       .includes(target.substring(0, 1));

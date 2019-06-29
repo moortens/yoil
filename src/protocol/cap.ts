@@ -1,6 +1,7 @@
-const Base = require('./base');
-const Event = require('../event');
-const Message = require('../message');
+import Base from './base';
+import Event from '../event';
+import Message from '../message';
+import Client from '../client';
 
 /**
  * todo
@@ -8,12 +9,13 @@ const Message = require('../message');
  * - make it all nicer...
  */
 class Cap extends Base {
-  constructor(client) {
-    super(client);
+  private supportedCapabilities: Map<string, any> = new Map();
+  private acknowledgedCapabilities: string[] = [];
 
-    this.supportedCapabilities = new Map();
-    this.acknowledgedCapabilities = [];
-    this.refusedCapabilities = [];
+  private negotiating = false;
+
+  constructor(client: Client) {
+    super(client);
 
     this.prependConnectionListener(
       'socket::connected',
@@ -30,7 +32,7 @@ class Cap extends Base {
     this.send(new Message('CAP', 'LS', '302'));
   }
 
-  negotiate(data) {
+  negotiate(data: Message) {
     const verb = data.params[1];
 
     const handlers = {
@@ -49,7 +51,7 @@ class Cap extends Base {
     handlers[verb].call(this, data);
   }
 
-  list(data) {
+  list(data: Message) {
     const { params } = data;
 
     const capabilities = params
@@ -68,7 +70,7 @@ class Cap extends Base {
     );
   }
 
-  addSupportedCapabilities(capabilities) {
+  addSupportedCapabilities(capabilities: string) {
     capabilities.split(' ').forEach(capability => {
       const [, key, value = null] = capability.match(/^([^=|$]*)(?:=(.*))?/);
       if (value) {
@@ -79,7 +81,7 @@ class Cap extends Base {
     });
   }
 
-  ls(data) {
+  ls(data: Message) {
     if (!this.negotiating) {
       return;
     }
@@ -94,7 +96,7 @@ class Cap extends Base {
 
     this.store
       .getDesiredCapabilities()
-      .filter(capability => {
+      .filter((capability: string) => {
         const dependants = this.store.getDesiredCapabilityDependants(
           capability,
         );
@@ -103,9 +105,9 @@ class Cap extends Base {
           return true;
         }
 
-        const shouldAppend = dependants.every(cap => {
+        const shouldAppend = dependants.every((cap: string | string[]) => {
           if (cap instanceof Array) {
-            return cap.some(c => this.supportedCapabilities.has(c));
+            return cap.some((c: string) => this.supportedCapabilities.has(c));
           }
 
           return this.supportedCapabilities.has(cap);
@@ -115,11 +117,11 @@ class Cap extends Base {
           return false;
         }
 
-        dependants.forEach(cap => {
+        dependants.forEach((cap: string | string[]) => {
           if (cap instanceof Array) {
             cap
-              .filter(c => this.supportedCapabilities.has(c))
-              .map(c => requestCapabilities.add(c));
+              .filter((c: string) => this.supportedCapabilities.has(c))
+              .map((c: string) => requestCapabilities.add(c));
           } else {
             requestCapabilities.add(cap);
           }
@@ -127,15 +129,15 @@ class Cap extends Base {
 
         return true;
       })
-      .filter(capability => this.supportedCapabilities.has(capability))
-      .forEach(capability => requestCapabilities.add(capability));
+      .filter((capability: string) => this.supportedCapabilities.has(capability))
+      .forEach((capability: any) => requestCapabilities.add(capability));
 
     this.send(
       new Message('CAP', 'REQ', Array.from(requestCapabilities).join(' ')),
     );
   }
 
-  ack(data) {
+  ack(data: Message) {
     this.acknowledgedCapabilities = data.params
       .slice()
       .pop()
@@ -163,7 +165,7 @@ class Cap extends Base {
     );
   }
 
-  nak(data) {
+  nak(data: Message) {
     const { params } = data;
     const capabilities = params
       .slice()
@@ -181,7 +183,7 @@ class Cap extends Base {
     );
   }
 
-  newcap(data) {
+  newcap(data: Message) {
     this.addSupportedCapabilities(data.params.slice().pop());
 
     const requestCapabilities = this.store
@@ -195,7 +197,7 @@ class Cap extends Base {
     this.send(new Message('CAP', 'REQ', requestCapabilities.join(' ')));
   }
 
-  del(data) {
+  del(data: Message) {
     const capabilities = data.params
       .slice()
       .pop()
@@ -226,4 +228,4 @@ class Cap extends Base {
   }
 }
 
-module.exports = Cap;
+export default Cap;

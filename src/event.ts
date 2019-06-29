@@ -1,15 +1,16 @@
-const Message = require('./message');
+import Message from './message';
 
-class Event {
-  constructor(data, context = new Message()) {
+class DispatchedEvent {
+  private context: Message = null;
+
+  constructor(data: object, context: Message = new Message()) {
     if (!(context instanceof Message)) {
       throw new Error('Context needs to be of type Message');
     }
 
     Object.assign(this, data, {});
-    Object.defineProperty(this, 'context', {
-      value: context,
-    });
+    
+    this.context = context;
 
     return new Proxy(this, {
       get: (target, name) => {
@@ -27,7 +28,7 @@ class Event {
     });
   }
 
-  tag(key) {
+  tag(key: string) {
     if (!this.context.tags) {
       return null;
     }
@@ -35,4 +36,4 @@ class Event {
   }
 }
 
-module.exports = Event;
+export default DispatchedEvent;
