@@ -127,8 +127,9 @@ class Channel extends Base {
     const members = data.params[data.params.length - 1].split(' ');
     members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
+      const userhost = Base.parseUserHost(user);
       this.addChannelMember(data.params[2], {
-        ...Base.parseUserHost(user),
+        ...userhost,
         modes,
       });
     });
