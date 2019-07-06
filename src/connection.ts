@@ -1,9 +1,22 @@
-const EventEmitter = require('events');
+import { EventEmitter } from 'events';
 
-const Parser = require('./parser');
+import Config from "./config";
+import Parser from './parser';
+
+interface ConnectionOptions {
+  host: string,
+  port: number,
+};
 
 class Connection extends EventEmitter {
-  constructor(config) {
+  config: Config = null;
+  tls: boolean = false;
+
+  connectionOptions: ConnectionOptions = null;
+
+  socket: WebSocket = null;
+
+  constructor(config: Config) {
     super();
 
     this.config = config;
@@ -13,8 +26,6 @@ class Connection extends EventEmitter {
       host: this.config.host,
       port: this.config.port,
     };
-
-    this.socket = null;
   }
 
   connect() {
@@ -47,7 +58,7 @@ class Connection extends EventEmitter {
       this.emit('socket::data', Parser.parse(data));
   }
 
-  send(data) {
+  send(data: string | object) {
     if ([0, 2, 3].includes(this.socket.readyState)) {
       return null;
     }
@@ -63,4 +74,4 @@ class Connection extends EventEmitter {
   }
 }
 
-module.exports = Connection;
+export default Connection;

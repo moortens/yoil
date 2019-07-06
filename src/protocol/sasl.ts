@@ -292,10 +292,10 @@ class Sasl extends Base {
     if (payload.has('e')) {
       const error = payload.get('e');
 
-      this.emit('sasl::error', {
+      this.emit('sasl::error', new Event({
         error,
         mechanism: this.mechanism,
-      });
+      }, data));
 
       return '*';
     }
@@ -341,10 +341,10 @@ class Sasl extends Base {
     if (payload.has('e')) {
       const error = payload.get('e');
 
-      this.emit('sasl::error', {
+      this.emit('sasl::error', new Event({
         error,
         mechanism: this.mechanism,
-      });
+      }, data));
 
       return '*';
     }

@@ -1,8 +1,12 @@
-const Base = require('./base');
-const Event = require('../event');
+import Base from './base';
+import Event from '../event';
+import Client from '../client';
+import Message from '../message';
 
 class Batch extends Base {
-  constructor(client) {
+  batches: Map<string, any> = new Map()
+  
+  constructor(client: Client) {
     super(client);
 
     this.store.addDesiredCapability('batch');
@@ -17,11 +21,9 @@ class Batch extends Base {
 
     this.addCommandListener('BATCH', this.batch.bind(this));
     this.addCommandListener('ACK', this.ack.bind(this));
-
-    this.batch = new Map();
   }
 
-  batch(data) {
+  batch(data: Message) {
     const prefix = data.params[0].charCodeAt(0);
     const reference = data.params[0].substring(1);
 
@@ -47,7 +49,7 @@ class Batch extends Base {
         }
       }
 
-      this.batch.set(reference, {
+      this.batches.set(reference, {
         type,
         reference,
         parameters,
@@ -58,7 +60,7 @@ class Batch extends Base {
         'batch',
         new Event(
           {
-            ...this.batch.get(reference),
+            ...this.batches.get(reference),
             data: Array.from(this.store.batchedResponseCache.get(reference)),
           },
           data,
@@ -66,11 +68,11 @@ class Batch extends Base {
       );
 
       this.store.batchedResponseCache.delete(reference);
-      this.batch.delete(reference);
+      this.batches.delete(reference);
     }
   }
 
-  ack(data) {
+  ack(data: Message) {
     if (!data.tags.has('label') && !data.tags.has('draft/label')) {
       this.emit(
         'server::ack',
@@ -96,4 +98,4 @@ class Batch extends Base {
   }
 }
 
-module.exports = Batch;
+export default Batch;

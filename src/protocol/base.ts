@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import Parser from '../parser';
 
 import Client from '../client';
@@ -65,36 +65,32 @@ abstract class Base {
    * @param  {...any} args
    * @see {@link https://nodejs.org/api/events.html#events_emitter_prependlistener_eventname_listener|prependListener}
    */
-  prependConnectionListener(...args: any[]) {
-    return this.client.prependListener(...args);
+  prependConnectionListener(eventName: string, args: any) {
+    return this.client.prependListener(eventName, args);
   }
 
   /**
    *
    * @param  {...any} args
    */
-  addConnectionListener(...args: any[]) {
-    return this.client.addListener(...args);
+  addConnectionListener(eventName: string, args: any) {
+    return this.client.addListener(eventName, args);
   }
 
-  prependCommandListener(...args: any[]) {
-    const [eventName] = args;
-
+  prependCommandListener(eventName: string, args: any) {
     eventNames.add(eventName);
 
-    return this.events.prependListener(...args);
+    return this.events.prependListener(eventName, args);
   }
 
   /**
    *
    * @param  {...any} args
    */
-  addCommandListener(...args: any[]) {
-    const [eventName] = args;
-
+  addCommandListener(eventName: string, args: any) {
     eventNames.add(eventName);
 
-    return this.events.addListener(...args);
+    return this.events.addListener(eventName, args);
   }
 
   static getCommandListenerEvents() {
@@ -106,16 +102,14 @@ abstract class Base {
    * @param  {...any} args
    */
   emit(event: string, data: Event) {
-    if (data.context.tags) {
-      if (data.context.tags.get('batch')) {
-        return this.store.enqueueBatchedResponse(
-          data.context.tags.get('batch'),
-          {
-            event,
-            ...data,
-          },
-        );
-      }
+    if (data.tag('batch')) {
+      return this.store.enqueueBatchedResponse(
+        data.tag('batch'),
+        {
+          event,
+          ...data,
+        },
+      );
     }
 
     return this.client.emit(event, {
@@ -124,7 +118,7 @@ abstract class Base {
     });
   }
 
-  static parseModeInUserhost(str: string) {
+  static parseModeInUserhost(str: string): [string, Array<string>] {
     const modes = ['~', '&', '@', '%', '+'];
 
     let i = 0;

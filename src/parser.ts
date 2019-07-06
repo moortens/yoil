@@ -1,8 +1,16 @@
-const Numerics = require('./numerics');
-const Message = require('./message');
+import Numerics from './numerics';
+import Message from './message';
+
+interface UserHost {
+  prefix: string,
+  nick: string,
+  ident: string,
+  hostname: string,
+  gecos?: string,
+};
 
 class Parser {
-  static parseMessageTags(token) {
+  static parseMessageTags(token: string): any[] {
     return token
       .substr(1)
       .split(';')
@@ -28,7 +36,7 @@ class Parser {
       });
   }
 
-  static parseUserHost(userhost) {
+  static parseUserHost(userhost: string): UserHost {
     const [prefix, nick, ident, hostname] = userhost.match(
       /([^!@]*)(?:!([^@]*))?(?:@([^$]*))?$/,
     );
@@ -36,7 +44,7 @@ class Parser {
     return { prefix, nick, ident, hostname };
   }
 
-  static parse(message) {
+  static parse(message: string) {
     if (typeof message !== 'string') {
       return {};
     }
@@ -88,4 +96,4 @@ class Parser {
   }
 }
 
-module.exports = Parser;
+export default Parser;

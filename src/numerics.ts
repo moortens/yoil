@@ -339,4 +339,4 @@ const Numerics = {
   931: 'RPL_MALICIOUS',
 };
 
-module.exports = Numerics;
+export default Numerics;

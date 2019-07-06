@@ -1,16 +1,16 @@
+import DispatchedEvent from "./event";
+
 class Store {
-  constructor() {
-    this.store = new Map();
+  store: Map<string, any> = new Map();
 
-    this.desiredCapabilities = new Map();
-    this.enabledCapabilities = new Set();
+  desiredCapabilities: Map<string, string | Array<string>> = new Map();
+  enabledCapabilities: Set<string> = new Set();
 
-    this.advertisedFeatures = new Map();
+  advertisedFeatures: Map<string, string | boolean> = new Map();
 
-    // multi-line responses, batch cache
-    this.cache = new Map();
-    this.batchedResponseCache = new Map();
-  }
+  // multi-line responses, batch cache
+  cache: Map<string, any> = new Map();
+  batchedResponseCache: Map<string, Set<DispatchedEvent>> = new Map();
 
   /**
    * Adds a desired capability which the client will try to negotiate. If an array of
@@ -41,7 +41,7 @@ class Store {
 
       if (this.desiredCapabilities.has(cap)) {
         this.desiredCapabilities.set(cap, [
-          ...this.desiredCapabilities.get(cap),
+          ...Array.from(this.desiredCapabilities.get(cap)),
           ...dependants,
         ]);
       } else {
@@ -147,11 +147,11 @@ class Store {
    * @returns {Object} all advertised features
    */
   getAdvertisedFeatures() {
-    return Object.fromEntries(this.advertisedFeatures);
+    return this.advertisedFeatures;
   }
 
   enqueueBatchedResponse(batch, data) {
-    const batchCache = this.batchedResponseCache.get(batch) || new Set();
+    const batchCache = this.batchedResponseCache.get(batch) || new Set<DispatchedEvent>();
 
     batchCache.add(data);
 
@@ -178,4 +178,4 @@ class Store {
   }
 }
 
-module.exports = new Store();
+export default new Store();

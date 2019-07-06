@@ -3,11 +3,7 @@ import Message from './message';
 class DispatchedEvent {
   private context: Message = null;
 
-  constructor(data: object, context: Message = new Message()) {
-    if (!(context instanceof Message)) {
-      throw new Error('Context needs to be of type Message');
-    }
-
+  constructor(data: object, context: Message) {
     Object.assign(this, data, {});
     
     this.context = context;

@@ -45,7 +45,9 @@ class Cap extends Base {
     };
 
     if (handlers[verb] === undefined) {
-      this.emit('error', `Unknown CAP command sent by server: ${verb}`);
+      this.emit('error', new Event({
+        error: `Unknown CAP command sent by server: ${verb}`
+      }, data));
     }
 
     handlers[verb].call(this, data);

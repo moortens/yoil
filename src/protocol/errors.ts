@@ -1,9 +1,11 @@
-const Base = require('./base');
-const Numerics = require('../numerics');
-const Event = require('../event');
+import Base from './base';
+import Numerics from '../numerics';
+import Event from '../event';
+import Client from '../client';
+import Message from '../message';
 
 class Errors extends Base {
-  constructor(client) {
+  constructor(client: Client) {
     super(client);
 
     this.addCommandListener('WARN', this.standardReplies.bind(this));
@@ -21,7 +23,7 @@ class Errors extends Base {
       });
   }
 
-  error(data) {
+  error(data: Message) {
     const {
       params: [client, ...params],
     } = data;
@@ -37,7 +39,7 @@ class Errors extends Base {
     );
   }
 
-  standardReplies(data) {
+  standardReplies(data: Message) {
     const [type, command, code] = data.params;
     const description = data.params[data.params.length - 1];
 
@@ -47,8 +49,8 @@ class Errors extends Base {
     }
 
     this.emit(
+      `server::${data.command.toLowerCase()}`,
       new Event(
-        `server::${data.command.toLowerCase()}`,
         {
           type,
           command,
@@ -62,4 +64,4 @@ class Errors extends Base {
   }
 }
 
-module.exports = Errors;
+export default Errors;

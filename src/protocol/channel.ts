@@ -1,8 +1,13 @@
-const Base = require('./base');
-const Event = require('../event');
+import Base from './base';
+import Event from '../event';
+import Client from '../client';
+import Message from '../message';
 
 class Channel extends Base {
-  constructor(client) {
+  channelMembersCache: Map<string, any> = new Map();
+  channelTopicCache: Map<string, any> = new Map();
+  
+  constructor(client: Client) {
     super(client);
 
     this.store.addDesiredCapability('userhost-in-names');
@@ -33,12 +38,9 @@ class Channel extends Base {
     this.addCommandListener('ERR_NOTONCHANNEL', this.error.bind(this));
     this.addCommandListener('ERR_USERONCHANNEL', this.error.bind(this));
     this.addCommandListener('ERR_CHANOPRIVSNEEDED', this.error.bind(this));
-
-    this.channelMembersCache = new Map();
-    this.channelTopicCache = new Map();
   }
 
-  addChannelMember(channel, user) {
+  addChannelMember(channel: string, user: any) {
     const members = this.channelMembersCache.get(channel) || new Set();
 
     members.add(user);
@@ -46,11 +48,11 @@ class Channel extends Base {
     this.channelMembersCache.set(channel, members);
   }
 
-  getChannelMembers(channel) {
+  getChannelMembers(channel: string) {
     return this.channelMembersCache.get(channel) || new Set();
   }
 
-  join(data) {
+  join(data: Message) {
     const { nick, ident, hostname, params } = data;
     const [channel, account = null, realname = null] = params;
 
@@ -70,7 +72,7 @@ class Channel extends Base {
     );
   }
 
-  topicWhoTime(data) {
+  topicWhoTime(data: Message) {
     const {
       params: [, channel, userhost, time],
     } = data;
@@ -94,7 +96,7 @@ class Channel extends Base {
     );
   }
 
-  topic(data) {
+  topic(data: Message) {
     const { nick, ident, hostname, command, params } = data;
     if (command === 'RPL_TOPIC') {
       const [, channel, topic] = params;
@@ -121,7 +123,7 @@ class Channel extends Base {
   }
 
   // todo: make it pretty
-  names(data) {
+  names(data: Message) {
     const members = data.params[data.params.length - 1].split(' ');
     members.forEach(u => {
       const [user, modes] = Base.parseModeInUserhost(u);
@@ -132,7 +134,7 @@ class Channel extends Base {
     });
   }
 
-  userlist(data) {
+  userlist(data: Message) {
     const [, channel] = data.params;
     this.emit(
       'channel::members',
@@ -146,7 +148,7 @@ class Channel extends Base {
     );
   }
 
-  quit(data) {
+  quit(data: Message) {
     const {
       nick,
       ident,
@@ -167,7 +169,7 @@ class Channel extends Base {
     );
   }
 
-  invite(data) {
+  invite(data: Message) {
     const {
       nick,
       ident,
@@ -189,7 +191,7 @@ class Channel extends Base {
     );
   }
 
-  part(data) {
+  part(data: Message) {
     const {
       nick,
       ident,
@@ -211,7 +213,7 @@ class Channel extends Base {
     );
   }
 
-  kick(data) {
+  kick(data: Message) {
     const { nick, ident, hostname, params } = data;
     const [channel, target, reason] = params;
 
@@ -243,7 +245,7 @@ class Channel extends Base {
     ]
   }
   */
-  mode(data) {
+  mode(data: Message) {
     const [target, modes, ...params] = data.params;
 
     if (!this.isChannel(target)) {
@@ -290,7 +292,7 @@ class Channel extends Base {
     this.emit('channel::mode', res);
   }
 
-  error(data) {
+  error(data: Message) {
     const {
       params: [, channel, message],
     } = data;
@@ -308,4 +310,4 @@ class Channel extends Base {
   }
 }
 
-module.exports = Channel;
+export default Channel;

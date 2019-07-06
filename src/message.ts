@@ -1,20 +1,22 @@
-const uuid = require('uuid/v4');
+import uuid from 'uuid/v4';
 
-const store = require('./store');
+import store from './store';
 
 class Message {
-  constructor(data, ...params) {
-    this.tags = new Map();
-    this.prefix = null;
-    this.nick = null;
-    this.ident = null;
-    this.hostname = null;
-    this.command = null;
-    this.params = [];
+  tags: Map<any, any> = new Map();
+  prefix: string = null;
+  nick: string = null;
+  ident: string = null;
+  hostname: string = null;
+  command: string = null;
+  message: string = null;
+  params: string[] = [];
+  timestamp: Date = new Date();
 
+  constructor(data?: object | string, ...params: string[]) {
     if (data instanceof Object) {
       Object.assign(this, data, {});
-    } else if (typeof data === 'string' || data instanceof String) {
+    } else if (typeof data === 'string') {
       this.command = data;
       this.params = params;
     }
@@ -22,27 +24,14 @@ class Message {
     if (!(this.tags instanceof Map)) {
       throw new Error('tags need to be an instance of Map');
     }
-
-    this.timestamp = new Date();
-
-    // fix.
-    const reply = message => {
-      // check if channel or privmsg
-      // reply to correct target
-      return message;
-    };
-
-    if (this.command === 'PRIVMSG') {
-      this.reply = reply;
-    }
   }
 
-  set(key, value) {
+  set(key: any, value: any): Message {
     this.tags.set(key, value);
     return this;
   }
 
-  get time() {
+  get time(): Date {
     if (this.tags.has('time')) {
       return new Date(this.tags.get('time'));
     }
@@ -50,14 +39,14 @@ class Message {
     return this.timestamp;
   }
 
-  get account() {
+  get account(): string {
     if (this.tags.has('account')) {
       return this.tags.get('account');
     }
     return null;
   }
 
-  get msgid() {
+  get msgid(): string {
     if (this.tags.has('msgid')) {
       return this.tags.get('msgid');
     }
@@ -69,7 +58,7 @@ class Message {
     return null;
   }
 
-  get label() {
+  get label(): string {
     if (this.tags.has('label')) {
       return this.tags.get('label');
     }
@@ -81,7 +70,7 @@ class Message {
     return null;
   }
 
-  toString() {
+  toString(): string {
     let message = [];
 
     if (
@@ -149,4 +138,4 @@ class Message {
   }
 }
 
-module.exports = Message;
+export default Message;

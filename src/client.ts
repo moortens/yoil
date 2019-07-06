@@ -82,7 +82,7 @@ class Client extends Connection {
    * @param {Boolean} reset if true, resets attempt count and instantly
    *   attempts to connect.
    */
-  reconnect(reset = false) {
+  reconnect(reset: boolean = false) {
     if (reset) {
       this.store.set('reconnectAttempts', 0);
 

@@ -1,8 +1,10 @@
-const Base = require('./base');
-const Event = require('../event');
+import Base from './base';
+import Event from '../event';
+import Client from '../client';
+import Message from '../message';
 
 class Messages extends Base {
-  constructor(client) {
+  constructor(client: Client) {
     super(client);
 
     this.store.addDesiredCapability('server-time');
@@ -32,11 +34,11 @@ class Messages extends Base {
     return [command, value];
   }
 
-  static isServerMessage({ prefix }, server) {
+  static isServerMessage({ prefix }, server: string) {
     return prefix === server || server === undefined;
   }
 
-  message(data) {
+  message(data: Message) {
     const {
       prefix,
       nick,
@@ -96,4 +98,4 @@ class Messages extends Base {
   }
 }
 
-module.exports = Messages;
+export default Messages;

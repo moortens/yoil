@@ -1,8 +1,10 @@
-const Base = require('./base');
-const Event = require('../event');
+import Base from './base';
+import Event from '../event';
+import Client from '../client';
+import Message from '../message';
 
 class User extends Base {
-  constructor(client) {
+  constructor(client: Client) {
     super(client);
 
     this.store.addDesiredCapability('account-notify');
@@ -17,7 +19,7 @@ class User extends Base {
     this.addCommandListener('AWAY', this.invite.bind(this));
   }
 
-  chghost(data) {
+  chghost(data: Message) {
     const {
       nick,
       params: [ident, hostname],
@@ -40,7 +42,7 @@ class User extends Base {
     );
   }
 
-  account(data) {
+  account(data: Message) {
     const {
       nick,
       params: [account],
@@ -57,7 +59,7 @@ class User extends Base {
     );
   }
 
-  invite(data) {
+  invite(data: Message) {
     const {
       nick,
       params: [invitedNick, channel],
@@ -78,7 +80,7 @@ class User extends Base {
     );
   }
 
-  away(data) {
+  away(data: Message) {
     const {
       nick,
       params: [message = null],
@@ -97,4 +99,4 @@ class User extends Base {
   }
 }
 
-module.exports = User;
+export default User;

@@ -1,9 +1,12 @@
-const Base = require('./base');
-const Message = require('../message');
-const Event = require('../event');
+import Base from './base';
+import Message from '../message';
+import Event from '../event';
+import Client from '../client';
 
 class Registration extends Base {
-  constructor(client) {
+  motdCache: Set<string> = new Set();
+
+  constructor(client: Client) {
     super(client);
 
     this.store.addDesiredCapability('extended-join');
@@ -28,11 +31,9 @@ class Registration extends Base {
     );
 
     this.addCommandListener('PING', this.ping.bind(this));
-
-    this.motd = new Set();
   }
 
-  register(data) {
+  register(data: Message) {
     const { password } = this.config;
 
     this.emit('server::connect', new Event({}, data));
@@ -47,7 +48,7 @@ class Registration extends Base {
     );
   }
 
-  welcome(data) {
+  welcome(data: Message) {
     const server = data.prefix;
     const [nickname] = data.params;
 
@@ -57,7 +58,7 @@ class Registration extends Base {
     this.emit('server::registered', new Event({ server, nickname }, data));
   }
 
-  isupport(data) {
+  isupport(data: Message) {
     // first param is target:
     data.params.shift();
     // last is the trailing message
@@ -77,10 +78,10 @@ class Registration extends Base {
       }
 
       if (typeof value === 'string') {
-        value = value.split(',');
+        const parameters = value.split(',');
 
-        if (value.length <= 1) {
-          value = value.pop() || true;
+        if (parameters.length <= 1) {
+          value = parameters.pop() || true;
         }
       }
 
@@ -94,10 +95,10 @@ class Registration extends Base {
   }
 
   motdStart() {
-    this.motd = new Set();
+    this.motdCache = new Set();
   }
 
-  errNoMotd(data) {
+  errNoMotd(data: Message) {
     return this.emit(
       'server::motd',
       new Event(
@@ -110,24 +111,24 @@ class Registration extends Base {
     );
   }
 
-  motd(data) {
-    this.motd.add(data.params.slice().pop());
+  motd(data: Message) {
+    this.motdCache.add(data.params.slice().pop());
   }
 
-  endOfMotd(data) {
+  endOfMotd(data: Message) {
     this.emit(
       'server::motd',
       new Event(
         {
           server: data.prefix,
-          motd: Array.from(this.motd),
+          motd: Array.from(this.motdCache),
         },
         data,
       ),
     );
   }
 
-  error(data) {
+  error(data: Message) {
     const {
       params: [client, message],
     } = data;
@@ -144,11 +145,11 @@ class Registration extends Base {
     );
   }
 
-  ping(data) {
+  ping(data: Message) {
     this.send(new Message('PONG', data.params[0]));
   }
 
-  nicknameInUse(data) {
+  nicknameInUse(data: Message) {
     const [, nickname, reason] = data.params;
     const alternateNickname = this.config.fixNicknameInUseCallback
       ? Reflect.apply(this.config.fixNicknameInUseCallback, undefined, [
@@ -174,7 +175,7 @@ class Registration extends Base {
     );
   }
 
-  erroneusNickname(data) {
+  erroneusNickname(data: Message) {
     const [, nickname, reason] = data.params;
 
     this.emit(
@@ -190,4 +191,4 @@ class Registration extends Base {
   }
 }
 
-module.exports = Registration;
+export default Registration;

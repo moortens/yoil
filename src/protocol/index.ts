@@ -7,7 +7,7 @@ import SaslHandler from './sasl';
 import UserHandler from './user';
 import ErrorHandler from './errors';
 import ServerHandler from './server';
-console.log("yo?")
+
 export default client => {
   client.use(CapHandler);
   client.use(MessagesHandler);
